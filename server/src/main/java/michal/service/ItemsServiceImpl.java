@@ -29,7 +29,9 @@ public class ItemsServiceImpl implements ItemsService{
 
         ItemsEntity items = itemsMapper.toEntity(itemsDTO);
 
+
         items.setList(listRepository.getReferenceById(itemsDTO.getListId()));
+        items.setTick(false);
         ItemsEntity save = itemsRepository.save(items);
 
         return itemsMapper.toDTO(save);
@@ -42,8 +44,8 @@ public class ItemsServiceImpl implements ItemsService{
     }
 
     @Override
-    public List<ItemsDTO> getAllItems(){
-        return itemsRepository.findAll().stream()
+    public List<ItemsDTO> getAllItems(Long listId){
+        return itemsRepository.findByListId(listId).stream()
                 .map(itemsMapper::toDTO)
                 .toList();
     }
@@ -52,7 +54,8 @@ public class ItemsServiceImpl implements ItemsService{
     public ItemsDTO updateItems(ItemsDTO itemsDTO) {
         ItemsEntity items = item(itemsDTO.getId());
         items.setName(itemsDTO.getName());
-        items.setCount(items.getCount());
+        items.setCount(itemsDTO.getCount());
+        items.setTick(itemsDTO.isTick());
 
         ItemsEntity updated = itemsRepository.save(items);
         return itemsMapper.toDTO(updated);

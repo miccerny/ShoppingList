@@ -8,7 +8,7 @@ public interface ItemsService {
 
     ItemsDTO addItems(ItemsDTO itemsDTO);
 
-    List<ItemsDTO> getAllItems();
+    List<ItemsDTO> getAllItems(Long listId);
 
     ItemsDTO getItem(Long id);
 

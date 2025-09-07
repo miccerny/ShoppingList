@@ -17,9 +17,7 @@ public class ListDTO {
 
     private String name;
 
-    @JsonProperty("owner_id")
-    private long ownerId;
+    private Long ownerId;
 
-    private List<ItemsDTO> items;
-
+    private long itemsCount;
 }

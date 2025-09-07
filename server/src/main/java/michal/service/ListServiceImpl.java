@@ -4,6 +4,7 @@ import michal.dto.ListDTO;
 import michal.dto.mapper.ListMapper;
 import michal.entity.ListEntity;
 import michal.entity.UserEntity;
+import michal.entity.repository.ItemsRepository;
 import michal.entity.repository.ListRepository;
 import michal.entity.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,9 @@ public class ListServiceImpl implements ListService{
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ItemsRepository itemsRepository;
+
     @Override
     public ListDTO addList(ListDTO listDTO){
         ListEntity listEntity = listMapper.toEntity(listDTO);
@@ -41,7 +45,11 @@ public class ListServiceImpl implements ListService{
     @Override
     public List<ListDTO> getAll() {
         return listRepository.findAll().stream()
-                .map(listMapper::toDTO)
+                .map(entity -> {
+                    ListDTO listDTO = listMapper.toDTO(entity);
+                    listDTO.setItemsCount(itemsRepository.countByListId(entity.getId()));
+                    return listDTO;
+                })
                 .toList();
 
     }

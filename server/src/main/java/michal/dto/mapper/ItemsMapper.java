@@ -14,11 +14,4 @@ public interface ItemsMapper {
 
     @Mapping(target = "listId", source = "list.id")
     ItemsDTO toDTO(ItemsEntity source);
-
-    default ListEntity map(Long listId){
-        if(listId == null) return null;
-        ListEntity list = new ListEntity();
-        list.setId(listId);
-        return list;
-    }
 }

@@ -17,5 +17,7 @@ public class ItemsDTO {
     private float count;
 
     @JsonProperty("list_id")
-    private Long listId;
+    private long listId;
+
+    private boolean tick;
 }

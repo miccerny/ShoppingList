@@ -1,6 +1,8 @@
 package michal.entity.repository;
 
+import michal.dto.ItemsDTO;
 import michal.dto.ListDTO;
+import michal.entity.ItemsEntity;
 import michal.entity.ListEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +17,5 @@ import java.util.Optional;
 @Repository
 public interface ListRepository extends JpaRepository<ListEntity, Long> {
 
-    @Query("SELECT l FROM lists l LEFT JOIN FETCH l.items WHERE l.id = :id")
-    Optional<ListEntity> findByWithItems(@Param("id") Long id);
+
 }

@@ -24,4 +24,7 @@ public class ItemsEntity {
     @JoinColumn(name= "list_id")
     private ListEntity list;
 
+    @Column
+    private boolean tick;
+
 }
