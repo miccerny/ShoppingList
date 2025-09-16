@@ -11,7 +11,7 @@ public class WebConfiguration implements WebMvcConfigurer{
         WebMvcConfigurer.super.addCorsMappings(registry);
         registry.addMapping("/**")
                 .allowedMethods("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedOriginPatterns("")
+                .allowedOriginPatterns("http://localhost:5173")
                 .allowCredentials(true);
     }
 }

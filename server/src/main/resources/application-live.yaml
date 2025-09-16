@@ -1,8 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost/ShoppingList
-    username: postgres
-    password: fortment
+    url: ${JDBC_DATABASE_URL}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -20,7 +18,3 @@ server:
 
 springdoc:
   api-docs.path: /api-docs
-
-
-
-
