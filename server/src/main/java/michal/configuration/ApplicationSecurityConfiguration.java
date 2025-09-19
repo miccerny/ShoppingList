@@ -38,7 +38,9 @@ public class ApplicationSecurityConfiguration {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // domény, které smí přistupovat
-        configuration.setAllowedOriginPatterns(List.of("http://localhost:5173"));
+        configuration.setAllowedOriginPatterns(List.of("http://localhost:5173",
+                "http://localhost:5174",
+                "https://shoppinglist-p81f.onrender.com" ));
         // povolené HTTP metody
         configuration.setAllowedMethods(List.of("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // povolené hlavičky
