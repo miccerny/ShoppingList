@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService{
             dto.setEmail(userDTO.getEmail());
             return dto;
         }catch (DataIntegrityViolationException e){
-            throw new DuplicateEmailException();
+            throw new DuplicateEmailException("Uživatel s tímto emailem již existuje.");
         }
     }
 
