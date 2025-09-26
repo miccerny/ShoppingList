@@ -53,5 +53,5 @@ public class UserController {
         request.logout();
         return "Uživatel odhlášen";
     }
-    
+
 }
