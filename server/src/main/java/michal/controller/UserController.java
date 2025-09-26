@@ -53,10 +53,5 @@ public class UserController {
         request.logout();
         return "Uživatel odhlášen";
     }
-
-    @ExceptionHandler(ServletException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public void handleServletException(){
-
-    }
+    
 }
