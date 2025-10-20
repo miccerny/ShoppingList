@@ -17,6 +17,12 @@ spring:
 server:
   port: ${PORT:8080}
   address: 0.0.0.0
+  servlet:
+    session:
+      cookie:
+        same-site: lax
+        secure: false
+
 
 springdoc:
   api-docs.path: /api-docs

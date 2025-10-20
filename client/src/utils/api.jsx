@@ -1,20 +1,75 @@
-const API_URL = 'http://localhost:8080/api';
+import { HttpRequestError } from "../Error/HttpRequstError";
+import { loadGuestList } from "../Lists/GuestList";
 
-export async function apiFetch(endpoint, options={}) {
-    const response = await fetch(`${API_URL}${endpoint}`, {
-        headers: {
-            "Content-Type": "applicatin/json",
-            ...(options.headers || {}),
+const API_URL = import.meta.env.VITE_API_URL;
 
-        },
-        ...options,
-    });
+export async function apiGet(endpoint, options={}) {
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
 
-    if(!response.ok){
-        throw new Error(`Chyba ${response.status}: ${response.statusText}`);
-    }
-    if(response.status === 204) return null;
+    },
+    credentials: "include",
+    ...options,
+  });
 
-    return response.json();
-    
+  if (!response.ok) {
+    throw new HttpRequestError(`Chyba ${response.status}: ${response.statusText}`, response);
+  }
+  if (response.status === 204) return null;
+
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
+
+}
+
+export async function apiGetById(endpoint, id) {
+  return apiGet(`${endpoint}/${id}`);
+}
+
+export async function apiPost(endpoint, data) {
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    throw new HttpRequestError(`Chyba ${response.status}: ${response.statusText}`, response);
+  }
+
+  if (response.status === 204) return null;
+
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
+}
+
+export async function apiPut(endpoint, data)  {
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    throw new HttpRequestError(
+      `Chyba při úpravě ${endpoint}/${id}: ${response.status}: ${response.statusText}`, response
+    );
+  }
+  if (response.status === 204) return null;
+  return await response.json();
+}
+
+export async function apiDelete(endpoint) {
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    method: "DELETE",
+    credentials: "include"
+  });
+  if (!response.ok) {
+    throw new HttpRequestError(
+      `Chyba při mazání ${endpoint}/${id} ${response.status}: ${response.statusText}`, response
+    );
+  }
 }

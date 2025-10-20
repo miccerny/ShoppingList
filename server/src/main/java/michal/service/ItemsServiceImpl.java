@@ -1,19 +1,19 @@
 package michal.service;
 
 import michal.dto.ItemsDTO;
-import michal.dto.ListDTO;
 import michal.dto.mapper.ItemsMapper;
 import michal.entity.ItemsEntity;
-import michal.entity.ListEntity;
 import michal.entity.repository.ItemsRepository;
 import michal.entity.repository.ListRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
+/**
+ * Service implementation for managing shopping list items.
+ */
 @Service
-public class ItemsServiceImpl implements ItemsService{
+public class ItemsServiceImpl implements ItemsService {
 
     @Autowired
     private ItemsRepository itemsRepository;
@@ -24,32 +24,61 @@ public class ItemsServiceImpl implements ItemsService{
     @Autowired
     private ListRepository listRepository;
 
+    /**
+     * Adds a new item to a specific list.
+     *
+     * @param listId   ID of the list
+     * @param itemsDTO item data
+     * @return created item
+     */
     @Override
-    public ItemsDTO addItems(ItemsDTO itemsDTO){
+    public ItemsDTO addItems(Long listId, ItemsDTO itemsDTO) {
+        if (listId == null) {
+            throw new IllegalArgumentException("List ID nesmí být null");
+        }
 
+        // Map DTO to entity and set list reference
         ItemsEntity items = itemsMapper.toEntity(itemsDTO);
-
-
-        items.setList(listRepository.getReferenceById(itemsDTO.getListId()));
+        items.setList(listRepository.getReferenceById(listId));
         items.setTick(false);
-        ItemsEntity save = itemsRepository.save(items);
 
-        return itemsMapper.toDTO(save);
+        // Save entity to database
+        ItemsEntity saved = itemsRepository.save(items);
+
+        // Return mapped DTO
+        return itemsMapper.toDTO(saved);
     }
 
+    /**
+     * Returns a single item by ID.
+     *
+     * @param id item ID
+     * @return found item
+     */
     @Override
     public ItemsDTO getItem(Long id) {
-        item(id);
         return itemsMapper.toDTO(item(id));
     }
 
+    /**
+     * Returns all items belonging to a specific list.
+     *
+     * @param listId ID of the list
+     * @return list of items
+     */
     @Override
-    public List<ItemsDTO> getAllItems(Long listId){
+    public List<ItemsDTO> getAllItems(Long listId) {
         return itemsRepository.findByListId(listId).stream()
                 .map(itemsMapper::toDTO)
                 .toList();
     }
 
+    /**
+     * Updates an existing item.
+     *
+     * @param itemsDTO updated item data
+     * @return updated item
+     */
     @Override
     public ItemsDTO updateItems(ItemsDTO itemsDTO) {
         ItemsEntity items = item(itemsDTO.getId());
@@ -61,15 +90,25 @@ public class ItemsServiceImpl implements ItemsService{
         return itemsMapper.toDTO(updated);
     }
 
+    /**
+     * Deletes an item by ID.
+     *
+     * @param id item ID
+     */
     @Override
-    public void removeItem(long id){
+    public void removeItem(long id) {
         ItemsEntity itemsEntity = item(id);
         itemsRepository.delete(itemsEntity);
     }
 
-    private ItemsEntity item (long id){
+    /**
+     * Helper method to find an item or throw an exception if not found.
+     *
+     * @param id item ID
+     * @return found {@link ItemsEntity}
+     */
+    private ItemsEntity item(long id) {
         return itemsRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("Položka s " + id + " nenalezena"));
+                .orElseThrow(() -> new RuntimeException("Položka s ID " + id + " nenalezena"));
     }
-
 }
