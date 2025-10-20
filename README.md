@@ -62,3 +62,60 @@ frontend/
  ├─ services/           → apiFetch(), authentication helpers
  ├─ context/            → Auth and list context providers
  └─ styles/             → Bootstrap-based styling
+```
+
+## 📡 API Endpoints
+Method	Endpoint	Description
+POST	/api/register	Register a new user
+POST	/api/login	Log in user
+GET	/api/me	Get current logged-in user
+GET	/api/list	Get all lists for logged user
+POST	/api/list	Create new list
+PUT	/api/list/{id}	Update list
+DELETE	/api/list/{id}	Delete list
+GET	/api/list/{listId}/items	Get all items for a list
+POST	/api/list/{listId}/items	Add item to a list
+PUT	/api/list/{listId}/items/{id}	Update existing item
+DELETE	/api/list/{listId}/items/{id}	Remove item
+
+
+💾 ## Database Schema
+users
+ ├─ id (PK)
+ ├─ email (unique)
+ ├─ password
+
+lists
+ ├─ id (PK)
+ ├─ name
+ ├─ owner_id (FK → users.id)
+
+items
+ ├─ id (PK)
+ ├─ name
+ ├─ count
+ ├─ tick
+ ├─ list_id (FK → lists.id)
+
+🧠 ## How to Run
+# Backend
+- mvn clean install
+- mvn spring-boot:run
+
+# Frontend
+- npm install
+- npm run dev
+
+
+Default URLs:
+
+Backend → http://localhost:8080
+
+Frontend → http://localhost:5173
+
+👤 Author
+
+Michal Černý
+Full-stack Java Developer in training
+📍 Plzeň Region, Czechia
+💼 [LinkedIn](https://www.linkedin.com/in/michal-%c4%8dern%c3%bd-b388b0128/)
