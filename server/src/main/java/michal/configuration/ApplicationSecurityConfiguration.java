@@ -93,7 +93,8 @@ public class ApplicationSecurityConfiguration {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Allow requests from this origin (React dev server)
-        configuration.setAllowedOriginPatterns(List.of("http://localhost:5173"));
+        configuration.setAllowedOriginPatterns(List.of("http://localhost:5173", "\n" +
+                "https://sholist.netlify.app"));
 
         // Allow common HTTP methods
         configuration.setAllowedMethods(List.of("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS"));
