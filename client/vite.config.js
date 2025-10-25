@@ -6,6 +6,9 @@ export default defineConfig({
   plugins: [react()],
   base: './',
   server: {
-    port: 517, // 👈 tady nastavíš port napevno
+    proxy:{
+      '/api': 'http://localhost:8080',
+    },
+    port: 5173, // 👈 tady nastavíš port napevno
   },
 })
