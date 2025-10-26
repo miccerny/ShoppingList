@@ -7,7 +7,7 @@ export default defineConfig({
   base: './',
   server: {
     proxy:{
-      '/api': 'http://localhost:8080',
+      '': 'http://localhost:8080',
     },
     port: 5173, // 👈 tady nastavíš port napevno
   },

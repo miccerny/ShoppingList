@@ -1,5 +1,4 @@
 import { HttpRequestError } from "../Error/HttpRequstError";
-import { loadGuestList } from "../Lists/GuestList";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
