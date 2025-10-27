@@ -18,7 +18,7 @@ const ItemTable = ({ label, items, onEdit, onDelete }) => {
                                     {index + 1}. {item.name}
                                 </h5>
                                 <p>
-                                    {item.count}
+                                    Množství: {item.count}
                                 </p>
                                 <div className="btn-group">
                                     <Link to={`/list/show/${item.id}`}>

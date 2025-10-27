@@ -60,13 +60,6 @@ const ItemIndex = (props) => {
             <div className="w-75 mt-5">
                 <h1 className="text-center mb-3">Položky</h1>
                 {errorState && <div className="alert alert-danger">{errorState}</div>}
-                <InputField
-                    type="text"
-                    className="form-control"
-                    placeholder="např. mléko nebo pomazánkové máslo atd."
-                    name="Název položky"
-
-                />
 
                 <button className="btn btn-success mb-3"
                     onClick={() => {
