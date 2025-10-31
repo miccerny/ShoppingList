@@ -55,4 +55,6 @@ public interface ListService {
      * @return list with included items
      */
     ListDTO getListWithItems(Long id);
+
+    void shareList(Long listId, String email);
 }

@@ -69,6 +69,18 @@ public class ListServiceImpl implements ListService {
         return listMapper.toDTO(list(id));
     }
 
+    @Override
+    public void shareList(Long listId, String email){
+        ListEntity list = listRepository.findById(listId)
+                .orElseThrow(() -> new RuntimeException("Seznam nenalezen"));
+
+        UserEntity userToShare = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Uživatel s emailem" + email + "nenalezen"));
+
+        list.getSharedWith().add(userToShare);
+        listRepository.save(list);
+    }
+
     /**
      * Imports guest lists for the logged-in user.
      *

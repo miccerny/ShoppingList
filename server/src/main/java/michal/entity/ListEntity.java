@@ -3,7 +3,10 @@ package michal.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Entity representing a shopping list.
@@ -33,4 +36,13 @@ public class ListEntity {
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = true)
     private UserEntity owner;
+
+    @ManyToMany
+    @JoinTable(
+            name = "shared_lists",
+            joinColumns = @JoinColumn(name = "list_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+
+    )
+    private Set<UserEntity> sharedWith = new HashSet<>();
 }

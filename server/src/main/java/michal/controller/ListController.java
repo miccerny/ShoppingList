@@ -81,6 +81,13 @@ public class ListController {
         return listService.updateList(listDTO);
     }
 
+    @PostMapping("/{listId}/share")
+    public ResponseEntity<?> shareList(@PathVariable Long listId,
+                                       @RequestParam String emailToShare){
+        listService.shareList(listId, emailToShare);
+        return ResponseEntity.ok("List shared succesfully");
+    }
+
     /**
      * Import lists created by a guest user after they log in.
      * This allows transferring temporary data (like offline lists) to the logged-in account.
