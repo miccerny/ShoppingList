@@ -15,11 +15,18 @@ const ListIndex = (props) => {
     const [editId, setEditId] = useState(null);
     const loadLists = () => {
         if(session.status === "authenticated"){
-
+            console.log("🟡 Fetching lists...");
         apiGet("/list")
-            .then(setListState)
-            .catch((error) => setError(error.message));
+            .then((data) => {
+                console.log("🟢 Data loaded:", data);
+                setListState(data);
+            })
+            .catch((error) => {
+                console.error("❌ Error loading lists:", error);
+                setError(error.message);
+            });
         } else{
+            console.log("🧾 Loaded guest lists:", loadGuestList());
             setListState(loadGuestList());
         }
         }
@@ -28,7 +35,7 @@ const ListIndex = (props) => {
     useEffect(() => {
         loadLists();
 
-    }, [session]);
+    }, [session.status]);
 
 
     const handleDelete = async (id) => {

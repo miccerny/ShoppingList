@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import {apiGet} from "../utils/api";
+import { apiGet } from "../utils/api";
 import { HttpRequestError } from "../Error/HttpRequstError";
 import { syncGuestListAfterLogin } from "../Lists/GuestList";
 
@@ -14,7 +14,7 @@ export function useSession() {
 
 export const SessionProvider = ({ children }) => {
 
-    const [sessionState, setSessionState] = useState({ data: null, status: "loading" });
+    const [sessionState, setSessionState] = useState({ data: null, status: "authenticated" });
 
     useEffect(() => {
         if (sessionState.status === "authenticated") {
@@ -26,15 +26,14 @@ export const SessionProvider = ({ children }) => {
         apiGet("/me")
             .then(data => setSessionState({ data, status: "authenticated" }))
             .catch(e => {
-                if (e instanceof HttpRequestError) {
+                if (e instanceof HttpRequestError && e.response?.status === 401) {
                     // bezpečně zkontroluj status
-                    const status = e.response?.status;
-                    if (status === 401) {
-                        setSessionState({ data: null, status: "unauthenticated" });
-                        return;
-                    }
+                    setSessionState({ data: null, status: "unauthenticated" });
+                    return;
                 }
-                throw e;
+                console.error("Session load failed:", e);
+                setSessionState({ data: null, status: "unauthenticated" });
+
             });
     }, []);
 
