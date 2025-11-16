@@ -1,6 +1,7 @@
 package michal.controller;
 
 import michal.dto.ListDTO;
+import michal.dto.ShareRequestDTO;
 import michal.service.ListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -81,10 +82,22 @@ public class ListController {
         return listService.updateList(listDTO);
     }
 
-    @PostMapping("/{listId}/share")
+    /**
+     * Shares the selected shopping list with another user.
+     * <p>
+     * The frontend sends the target user's email in the request body.
+     * The service layer then resolves the user, validates the list and
+     * stores the sharing relation in the database.
+     * </p>
+     *
+     * @param listId     ID of the list that should be shared
+     * @param requestDTO object containing the email of the user to share the list with
+     * @return HTTP 200 response confirming successful sharing
+     */
+    @PostMapping("/{listId}")
     public ResponseEntity<?> shareList(@PathVariable Long listId,
-                                       @RequestParam String emailToShare){
-        listService.shareList(listId, emailToShare);
+                                       @RequestBody ShareRequestDTO requestDTO){
+        listService.shareList(listId, requestDTO.getEmail());
         return ResponseEntity.ok("List shared succesfully");
     }
 

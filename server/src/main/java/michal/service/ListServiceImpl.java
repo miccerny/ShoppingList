@@ -2,10 +2,13 @@ package michal.service;
 
 import michal.dto.ListDTO;
 import michal.dto.mapper.ListMapper;
+import michal.dto.mapper.SharedListMapper;
 import michal.entity.ListEntity;
+import michal.entity.SharedListEntity;
 import michal.entity.UserEntity;
 import michal.entity.repository.ItemsRepository;
 import michal.entity.repository.ListRepository;
+import michal.entity.repository.SharedListRepository;
 import michal.entity.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,6 +36,12 @@ public class ListServiceImpl implements ListService {
 
     @Autowired
     private ItemsRepository itemsRepository;
+
+    @Autowired
+    private SharedListMapper sharedListMapper;
+
+    @Autowired
+    private SharedListRepository sharedListRepository;
 
     /**
      * Creates a new shopping list and assigns it to the currently logged-in user.
@@ -69,16 +78,34 @@ public class ListServiceImpl implements ListService {
         return listMapper.toDTO(list(id));
     }
 
+
+    /**
+     * Shares an existing shopping list with another user.
+     * <p>
+     * The method loads the target list and the user by email,
+     * creates a new shared-list entry using the mapper and
+     * stores the relationship in the database.
+     * </p>
+     *
+     * @param listId ID of the list that should be shared
+     * @param email  email address of the user to share the list with
+     * @throws RuntimeException if the list or user does not exist
+     */
     @Override
     public void shareList(Long listId, String email){
+        // Load the list to be shared; fail if it does not exist
         ListEntity list = listRepository.findById(listId)
                 .orElseThrow(() -> new RuntimeException("Seznam nenalezen"));
 
+        // Find the user with whom the list should be shared
         UserEntity userToShare = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Uživatel s emailem" + email + "nenalezen"));
 
-        list.getSharedWith().add(userToShare);
-        listRepository.save(list);
+        // Use the mapper to build the SharedListEntity instance
+        SharedListEntity sharedList = sharedListMapper.toEntity(list, userToShare);
+
+        // Save the relation so the user gains access to the list
+        sharedListRepository.save(sharedList);
     }
 
     /**

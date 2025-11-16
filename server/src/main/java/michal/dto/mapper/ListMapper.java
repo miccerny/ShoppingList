@@ -16,12 +16,18 @@ public interface ListMapper {
 
     /** Converts a ListDTO to a ListEntity (maps ownerId → owner.id). */
     @Mapping(target = "owner.id", source = "ownerId")
+    @Mapping(target = "items", ignore = true)
+    @Mapping(target = "sharedWith", ignore = true)
     ListEntity toEntity(ListDTO source);
 
     /** Converts a ListEntity to a ListDTO (maps owner.id → ownerId). */
     @Mapping(target = "ownerId", source = "owner.id")
+    @Mapping(target = "itemsCount", ignore = true)
     ListDTO toDTO(ListEntity source);
 
     /** Updates an existing ListEntity with values from ListDTO. */
+    @Mapping(target = "owner.id", source = "ownerId")
+    @Mapping(target = "items", ignore = true)
+    @Mapping(target = "sharedWith", ignore = true)
     void updateEntity(ListDTO listDTO, @MappingTarget ListEntity listEntity);
 }

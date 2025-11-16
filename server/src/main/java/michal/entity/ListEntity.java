@@ -37,12 +37,6 @@ public class ListEntity {
     @JoinColumn(name = "owner_id", nullable = true)
     private UserEntity owner;
 
-    @ManyToMany
-    @JoinTable(
-            name = "shared_lists",
-            joinColumns = @JoinColumn(name = "list_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-
-    )
-    private Set<UserEntity> sharedWith = new HashSet<>();
+    @OneToMany(mappedBy = "list", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<SharedListEntity> sharedWith = new HashSet<>();
 }
