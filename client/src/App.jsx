@@ -2,7 +2,7 @@ import { BrowserRouter, data, Link, Navigate, Route, Routes } from 'react-router
 import ListIndex from './Lists/ListIndex'
 import "bootstrap/dist/css/bootstrap.min.css";
 import RegistrationPage from './Users/RegistrationPage';
-import { useSession } from './contexts/session';
+import { SessionProvider, useSession } from './contexts/session';
 import { apiDelete } from './utils/api';
 import LoginPage from './Users/LoginPage';
 import ItemIndex from './items/ItemIndex';
@@ -16,11 +16,6 @@ export function App() {
     apiDelete("/logout")
       .finally(() => setSession({ data: null, status: "unauthenticated" }));
   };
-
-  if (import.meta.env.DEV && !import.meta.env.VITE_USE_REAL_API) {
-  session.status = "authenticated";
-  session.data = { email: "michal@example.com" };
-}
 
   return (
     <BrowserRouter>
@@ -77,6 +72,7 @@ export function App() {
         </div>
       </div>
     </BrowserRouter>
+   
   );
 };
 

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { apiGet } from "../utils/api";
+import { apiGet } from "../utils/api.jsx";
 import { HttpRequestError } from "../Error/HttpRequstError";
 import { syncGuestListAfterLogin } from "../Lists/GuestList";
 
@@ -14,15 +14,16 @@ export function useSession() {
 
 export const SessionProvider = ({ children }) => {
 
-    const [sessionState, setSessionState] = useState({ data: null, status: "authenticated" });
+    const [sessionState, setSessionState] = useState({ data: null, status: "loading" });
 
     useEffect(() => {
-        if (sessionState.status === "authenticated") {
+        if (sessionState.status === "authenticated" && sessionState.data) {
             syncGuestListAfterLogin();
         }
     }, [sessionState.status]);
 
     useEffect(() => {
+        console.log("SESSION USE apiGet:", apiGet);
         apiGet("/me")
             .then(data => setSessionState({ data, status: "authenticated" }))
             .catch(e => {

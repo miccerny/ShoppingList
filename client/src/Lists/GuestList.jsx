@@ -56,6 +56,11 @@ export async function syncGuestListAfterLogin() {
 
 // 💾 Ulož nebo aktualizuj konkrétní list
 export function saveGuestList(list) {
+
+  if (Array.isArray(list)) {
+    console.error("saveGuestList dostal pole, čekám jeden objekt:", list);
+    return saveGuestLists(list);
+  }
   const all = loadGuestList();
   const idx = all.findIndex(
     (l) => String(l.id ?? l._id) === String(list.id ?? list._id)

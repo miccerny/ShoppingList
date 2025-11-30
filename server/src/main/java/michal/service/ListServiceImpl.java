@@ -12,10 +12,12 @@ import michal.entity.repository.SharedListRepository;
 import michal.entity.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -100,6 +102,10 @@ public class ListServiceImpl implements ListService {
         // Find the user with whom the list should be shared
         UserEntity userToShare = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Uživatel s emailem" + email + "nenalezen"));
+
+        if(sharedListRepository.existsByListIdAndUserId(listId, userToShare.getId())){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "\"Tento seznam je s tímto uživatelem již sdílen.");
+        }
 
         // Use the mapper to build the SharedListEntity instance
         SharedListEntity sharedList = sharedListMapper.toEntity(list, userToShare);

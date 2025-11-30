@@ -1,12 +1,9 @@
 import { HttpRequestError } from "../Error/HttpRequstError";
 
-const USE_REAL_API = import.meta.env.VITE_USE_REAL_API === "true";
 
-const API_URL =  
-import.meta.env.DEV && !USE_REAL_API
-    ? "" // 👉 mock režim (MSW)
-    : import.meta.env.VITE_API_URL + "/api";
-    console.info("🔧 API_URL:", API_URL);
+const API_URL =`${import.meta.env.VITE_API_URL}/api`;
+
+console.info("🔧 API_URL:", API_URL);
 
 export async function apiGet(endpoint, options={}) {
   console.log("➡️ FETCH:", `${API_URL}${endpoint}`);
@@ -36,6 +33,8 @@ export async function apiGetById(endpoint, id) {
 }
 
 export async function apiPost(endpoint, data) {
+  console.log("➡️ FETCH POST:", `${API_URL}${endpoint}`);
+
   const response = await fetch(`${API_URL}${endpoint}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
