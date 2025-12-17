@@ -1,3 +1,8 @@
+```
+The current branch is a "feature"
+
+```
+
 # 🧺 Shopping List App (Spring Boot + React)
 
 Full-stack web application for managing shopping lists and items.  
