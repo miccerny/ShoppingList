@@ -1,4 +1,4 @@
-- The current branch is "feature"
+- The current branch is "features"
 
 # 🧺 Shopping List App (Spring Boot + React)
 
