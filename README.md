@@ -1,7 +1,4 @@
-```
-The current branch is a "feature"
-
-```
+- The current branch is "feature"
 
 # 🧺 Shopping List App (Spring Boot + React)
 
