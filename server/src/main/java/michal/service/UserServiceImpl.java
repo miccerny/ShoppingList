@@ -3,8 +3,9 @@ package michal.service;
 import michal.dto.UserDTO;
 import michal.dto.mapper.UserMapper;
 import michal.entity.UserEntity;
+import michal.entity.enumy.EmailValidationError;
 import michal.entity.repository.UserRepository;
-import michal.service.Exception.DuplicateEmailException;
+import michal.service.Exception.EmailValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,7 +34,7 @@ public class UserServiceImpl implements UserService {
      *
      * @param userDTO registration data
      * @return created user
-     * @throws DuplicateEmailException if the email already exists
+     * @throws EmailValidationException if the email already exists
      */
     @Override
     public UserDTO createUser(UserDTO userDTO) {
@@ -53,7 +54,7 @@ public class UserServiceImpl implements UserService {
             return dto;
 
         } catch (DataIntegrityViolationException e) {
-            throw new DuplicateEmailException("Uživatel s tímto emailem již existuje.");
+            throw new EmailValidationException(EmailValidationError.EMAIL_ALREADY_EXISTS);
         }
     }
 

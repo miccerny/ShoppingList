@@ -1,0 +1,89 @@
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: block; /* default */
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+.btn-modern {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    color: white;
+}
+
+/* Sdílet */
+.btn-share {
+    background-color: #6c757d;
+}
+.btn-share:hover {
+    background-color: #7a8188;
+    transform: translateY(-2px);
+}
+
+/* Upravit */
+.btn-edit {
+    background-color: #0d6efd;
+}
+.btn-edit:hover {
+    background-color: #3b82f6;  /* jemnější modrá */
+    transform: translateY(-2px);
+}
+
+/* Smazat */
+.btn-delete {
+    background-color: #dc3545;
+}
+.btn-delete:hover {
+    background-color: #e05b67;
+    transform: translateY(-2px);
+}
+
+/* Vytvořit nový seznam */
+.btn-create {
+    background-color: #4caf50;
+}
+.btn-create:hover {
+    background-color: #5bc160;
+    transform: translateY(-2px);
+}
+
+.list-clickable {
+  display: block;
+  padding: 12px 18px;
+  border-radius: 10px;
+  background-color: #f5f5f5;
+  color: #222;
+  text-decoration: none;      /* Zrušíme style odkazu */
+  font-weight: 600;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.list-clickable:hover {
+  background-color: #eaeaea;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.list-clickable h4 {
+  margin: 0;
+}

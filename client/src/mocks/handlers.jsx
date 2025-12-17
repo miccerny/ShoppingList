@@ -1,118 +1,62 @@
 // handlers.jsx
 import { http, HttpResponse } from "msw";
-
+import { mockData } from "./mockData";
 
 // --- Mock data --- //
-const mockData = {
-  user: [
-    {
-      id: 1,
-      email: "michal@example.com",
-      password: "1234",
-      list: [
-        {
-          id: 101,
-          name: "Nákupní seznam",
-          items: [
-            { id: 1, name: "Mléko" },
-            { id: 2, name: "Chléb" },
-          ],
-        },
-        {
-          id: 102,
-          name: "Drogerie",
-          items: [
-            { id: 1, name: "Šampon" },
-            { id: 2, name: "Mýdlo" },
-          ],
-        },
-      ],
-    },
-  ],
-  list: [
-    {
-      id: 3,
-      name: "Nákup 20.10.",
-      items: [
-        { id: 5, name: "Rohlík", count: 1 },
-        { id: 6, name: "Kečup", count: 2 },
-      ],
-    },
-  ],
-};
+
 
 let currentUser = null;
 
 // --- Handlers --- //
 export const handlers = [
-  http.post("/login", async ({ request }) => {
-    const { email, password } = await request.json();
-    console.log("[MSW] /login called:", email, password);
 
-    const user = mockData.user.find(u => u.email === email && u.password === password);
+  // 🔑 LOGIN
+  http.post("/api/login", async ({ request }) => {
+    const { email, password } = await request.json();
+
+    const user = mockData.user.find(
+      (u) => u.email === email && u.password === password
+    );
+
     if (!user) {
       return HttpResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    currentUser = { id: user.id, email: user.email, username: user.username };
-    return HttpResponse.json(currentUser);
-  }),
+    // uložíme usera včetně listů
+    currentUser = JSON.parse(JSON.stringify(user));
 
-  // 🔓 LOGOUT
-  http.delete("/logout", () => {
-    currentUser = null;
-    return HttpResponse.json({ message: "Logged out" });
+    return HttpResponse.json({
+      id: user.id,
+      email: user.email,
+    });
   }),
 
   // 🙋‍♂️ ME
-  http.get("/me", () => {
+  http.get("/api/me", () => {
     if (!currentUser) {
       return HttpResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    return HttpResponse.json(currentUser);
+    return HttpResponse.json({
+      id: currentUser.id,
+      email: currentUser.email,
+    });
   }),
 
-
-  // 🧾 REGISTER
-  http.post("/register", async ({ request }) => {
-    const { username, email, password } = await request.json();
-    if (mockData.users.some((u) => u.email === email)) {
-      return HttpResponse.json({ error: "User already exists" }, { status: 409 });
+  // 🗒️ GET LISTS
+  http.get("/api/list", () => {
+    if (!currentUser) {
+      return HttpResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const newUser = {
-      id: Date.now(),
-      username,
-      email,
-      password,
-      lists: [],
-    };
-    mockData.users.push(newUser);
-    console.log("[MSW] ✅ Registered:", email);
-    return HttpResponse.json(newUser, { status: 201 });
+    return HttpResponse.json(currentUser.list);
   }),
 
-  // 🗒️ GET all lists (for logged user)
-  http.get("/list", () => {
+  // 🧺 GET ITEMS FROM LIST
+  http.get("/api/list/:listId/items", ({ params }) => {
     if (!currentUser) {
       return HttpResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = mockData.user.find(u => u.email === currentUser.email);
-    if (!user) {
-      return HttpResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    return HttpResponse.json(user.list); // ✅ vrací seznamy přihlášeného usera
-  }),
-
-  // 🧺 GET items for list
-  http.get("/list/:listId/items", ({ params }) => {
-    if (!currentUser) {
-      return HttpResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const list = currentUser.lists.find(
+    const list = currentUser.list.find(
       (l) => l.id === Number(params.listId)
     );
 
@@ -123,14 +67,13 @@ export const handlers = [
     return HttpResponse.json(list.items);
   }),
 
-  // ➕ POST new item
-  http.post("/list/:listId/items", async ({ params, request }) => {
+  // ➕ ADD ITEM
+  http.post("/api/list/:listId/items", async ({ params, request }) => {
     if (!currentUser) {
       return HttpResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const list = currentUser.lists.find(
+    const list = currentUser.list.find(
       (l) => l.id === Number(params.listId)
     );
 
@@ -138,30 +81,44 @@ export const handlers = [
       return HttpResponse.json({ error: "List not found" }, { status: 404 });
     }
 
-    const newItem = { id: Date.now(), name: body.name, done: false };
+    const body = await request.json();
+    const newItem = { id: Date.now(), name: body.name };
+
     list.items.push(newItem);
+
     return HttpResponse.json(newItem, { status: 201 });
   }),
 
-  // ❌ DELETE item
-  http.delete("/list/:listId/items/:itemId", ({ params }) => {
+  // ❌ DELETE ITEM
+  http.delete("/api/list/:listId/items/:itemId", ({ params }) => {
     if (!currentUser) {
       return HttpResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    for (const list of currentUser.lists) {
-      const idx = list.items.findIndex((i) => i.id === Number(params.itemId));
-      if (idx !== -1) {
-        list.items.splice(idx, 1);
-        return HttpResponse.json({ message: "Item deleted" });
-      }
+    const list = currentUser.list.find(
+      (l) => l.id === Number(params.listId)
+    );
+
+    if (!list) {
+      return HttpResponse.json({ error: "List not found" }, { status: 404 });
     }
-    return HttpResponse.json({ error: "Item not found" }, { status: 404 });
+
+    const index = list.items.findIndex(
+      (i) => i.id === Number(params.itemId)
+    );
+
+    if (index === -1) {
+      return HttpResponse.json({ error: "Item not found" }, { status: 404 });
+    }
+
+    list.items.splice(index, 1);
+
+    return HttpResponse.json({ message: "Item deleted" });
   }),
 
-  // 🔍 CATCH-ALL fallback (debug)
+  // ⚠️ CATCH-ALL
   http.all("*", ({ request }) => {
-    console.warn("[MSW] ⚠️ Zachyceno bez match:", request.method, request.url);
-    return HttpResponse.json({ warning: "no handler" }, { status: 418 });
-  }),
+    console.warn("[MSW] No handler matched:", request.method, request.url);
+    return HttpResponse.json({ error: "No mock handler" }, { status: 418 });
+  })
 ];

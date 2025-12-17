@@ -1,11 +1,24 @@
 import { HttpRequestError } from "../Error/HttpRequstError";
 
 
-const API_URL =`${import.meta.env.VITE_API_URL}/api`;
+const DEV = import.meta.env.DEV;
+const MODE = import.meta.env.VITE_API_MODE;  // mock | backend
+const BACKEND = import.meta.env.VITE_BACKEND_URL;
 
+// Režimy:
+// mock: FE používá relativní "/api" → MSW zachytí
+// backend: FE volá lokální/prod backend → BE zpracuje
+// production build -> MSW ignoruje, vznikne reálné API
+
+const API_URL =
+  DEV && MODE === "mock"
+    ? "/api"                   // /api/login → MSW
+    : BACKEND;
+
+console.log("🔧 API_MODE:", import.meta.env.VITE_API_MODE);
 console.info("🔧 API_URL:", API_URL);
 
-export async function apiGet(endpoint, options={}) {
+export async function apiGet(endpoint, options = {}) {
   console.log("➡️ FETCH:", `${API_URL}${endpoint}`);
   const response = await fetch(`${API_URL}${endpoint}`, {
     method: "GET",
@@ -51,7 +64,7 @@ export async function apiPost(endpoint, data) {
   return text ? JSON.parse(text) : null;
 }
 
-export async function apiPut(endpoint, data)  {
+export async function apiPut(endpoint, data) {
   const response = await fetch(`${API_URL}${endpoint}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },

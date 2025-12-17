@@ -30,7 +30,8 @@ public class SharedListEntity {
      * Unique identifier of this shared-list relation.
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "lists_seq")
+    @SequenceGenerator(name = "lists_seq", sequenceName = "lists_seq", allocationSize = 1)
     private Long id;
 
     /**

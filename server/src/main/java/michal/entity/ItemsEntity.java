@@ -29,11 +29,13 @@ public class ItemsEntity {
     private float count;
 
     /** The list this item belongs to. */
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "list_id")
     private ListEntity list;
 
     /** Indicates whether the item is checked (completed). */
     @Column
-    private boolean tick;
+    private boolean purchased;
+
+
 }

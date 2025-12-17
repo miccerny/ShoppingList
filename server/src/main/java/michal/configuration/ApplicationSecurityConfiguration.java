@@ -55,6 +55,9 @@ public class ApplicationSecurityConfiguration {
                 // Enable and configure CORS rules (frontend origin etc.)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .formLogin(formLogin -> formLogin.disable())
+
                 // Define which requests are allowed without login
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/register", "/api/login", "/api/me").permitAll() // public endpoints
@@ -74,7 +77,6 @@ public class ApplicationSecurityConfiguration {
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json");
-                            response.getWriter().write("{\"error\": \"Nepřihlášený uživatel\"}");
                         })
                 )
 

@@ -75,6 +75,28 @@ export function saveGuestList(list) {
   saveGuestLists(all);
 }
 
+export function updateGuestItems(listId, updateItems){
+    const all = loadGuestList();
+
+    const idx = all.findIndex(
+      (l) => String(l.id ?? l._id ) === String(listId)
+    );
+
+    if(idx !== -1){
+      all[idx] = {
+        ...all[idx],
+        items: updateItems,
+      }
+      console.warn("Guest list nebyl nalezen", listId);
+    }else{
+      all.push({
+        id: listId,
+        items: updateItems,
+      })
+    }
+      saveGuestLists(all); 
+};
+
 // ❌ Smaž konkrétní list
 export function deleteGuestList(id) {
   const filtered = loadGuestList().filter(

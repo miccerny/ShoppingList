@@ -3,6 +3,7 @@ package michal.service;
 import michal.dto.ItemsDTO;
 import michal.dto.mapper.ItemsMapper;
 import michal.entity.ItemsEntity;
+import michal.entity.ListEntity;
 import michal.entity.repository.ItemsRepository;
 import michal.entity.repository.ListRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +40,6 @@ public class ItemsServiceImpl implements ItemsService {
 
         // Map DTO to entity and set list reference
         ItemsEntity items = itemsMapper.toEntity(itemsDTO);
-        items.setList(listRepository.getReferenceById(listId));
-        items.setTick(false);
 
         // Save entity to database
         ItemsEntity saved = itemsRepository.save(items);
@@ -80,14 +79,25 @@ public class ItemsServiceImpl implements ItemsService {
      * @return updated item
      */
     @Override
-    public ItemsDTO updateItems(ItemsDTO itemsDTO) {
-        ItemsEntity items = item(itemsDTO.getId());
+    public ItemsDTO updateItems(Long id, ItemsDTO itemsDTO) {
+        ItemsEntity items = item(id);
         items.setName(itemsDTO.getName());
         items.setCount(itemsDTO.getCount());
-        items.setTick(itemsDTO.isTick());
+        items.setPurchased(itemsDTO.isPurchased());
 
         ItemsEntity updated = itemsRepository.save(items);
         return itemsMapper.toDTO(updated);
+    }
+
+    @Override
+    public void importItems(Long listId, List<ItemsDTO> items){
+        if(items == null) return;
+
+        for(ItemsDTO dto: items){
+            ItemsEntity itemsEntity = itemsMapper.toEntity(dto);
+            itemsEntity.setPurchased(dto.isPurchased());
+            itemsRepository.save(itemsEntity);
+        }
     }
 
     /**

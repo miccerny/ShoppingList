@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import ItemTable from "./ItemTable";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { apiGet, apiDelete } from "../utils/api";
+import { apiGet, apiDelete, apiPut } from "../utils/api";
 import ItemForm from "./ItemForm";
 import { useSession } from "../contexts/session";
-import { loadGuestList } from "../Lists/GuestList";
-import InputField from "../components/InputField";
+import { loadGuestList, updateGuestItems } from "../Lists/GuestList";
 import { useParams } from "react-router-dom";
 
 const ItemIndex = (props) => {
@@ -15,6 +14,7 @@ const ItemIndex = (props) => {
     const [showModal, setShowModal] = useState(false);
     const [editId, setEditId] = useState(null);
     const { id } = useParams();
+    const listId = id;
 
 
     const loadItems = () => {
@@ -38,64 +38,107 @@ const ItemIndex = (props) => {
 
     }, [id, session]);
 
+    const handleCheck = async (itemId) => {
 
-    const handleDelete = async (id) => {
-        try {
-            if (session.status === "authenticated") {
-                await apiDelete(`/list/${id}/items`, id);
-                loadItems();
-            } else {
-                const newLists = itemState.filter((i) => i.id !== id);
-                saveGuest(newLists);
-                setItemState(newLists);
+        // 1️⃣ Najdu původní item (před změnou)
+        const oldItem = itemState.find(i => i.id === itemId);
+        const newPurchasedValue = !oldItem.purchased;
+
+        // 2️⃣ Změním state
+        setItemState(prev =>
+            prev.map(item =>
+                item.id === itemId ? { ...item, purchased: newPurchasedValue } : item
+            )
+        );
+
+        // 3️⃣ Guest režim → uložit do localStorage
+        setItemState(prev => {
+            const updatedItems = prev.map(item =>
+                item.id === itemId ? { ...item, purchased: newPurchasedValue } : item
+            );
+            if (session.status !== "authenticated") {
+                updateGuestItems(listId, updatedItems);
             }
+            return updatedItems; // guest končí tady
+        });
+
+        // 4️⃣ Auth režim → uložit na BE
+        try {
+            await apiPut(`/list/${listId}/items/${itemId}`, {
+                purchased: newPurchasedValue
+            });
         } catch (err) {
-            setError(err.message);
+            console.error("Chyba při ukládání purchased:", err);
         }
     };
 
-    return (
+    const handleDelete = async (id) => {
+        try {
 
-        <div className="d-flex justify-content-center align-items-start min-vh-100">
-            <div className="w-75 mt-5">
-                <h1 className="text-center mb-3">Položky</h1>
-                {errorState && <div className="alert alert-danger">{errorState}</div>}
+            if (session.status === "authenticated") {
+                await apiDelete(`/list/${listId}/items/${itemId}`);
+                loadItems();
+                return;
+            }
 
-                <button className="btn btn-success mb-3"
-                    onClick={() => {
-                        setEditId(null);
-                        setShowModal(true);
-                    }}
-                >
-                    Nová položka
-                </button>
+            //GUEST režim
+            setItemState((prev) => {
+                const updatedItems = prev.filter(
+                    (item) => String(item.id) !== String(id)
+                );
+                
+               // uložit do localStorage
+                updateGuestItems(listId, updatedItems);
+                return updatedItems;
+            });
+        } catch (err) {
+        setError(err.message);
+    }
+};
+
+return (
+
+    <div className="d-flex justify-content-center align-items-start min-vh-100">
+        <div className="w-75 mt-5">
+            <h1 className="text-center mb-3">Položky</h1>
+            {errorState && <div className="alert alert-danger">{errorState}</div>}
+
+            <button className="btn btn-success mb-3"
+                onClick={() => {
+                    setEditId(null);
+                    setShowModal(true);
+                }}
+            >
+                Nová položka
+            </button>
 
 
-                <hr />
+            <hr />
 
-                <ItemTable
-                    items={itemState}
-                    label="Počet položek: "
-                    onEdit={(id) => {
-                        setEditId(id);
-                        setShowModal(true);
-                    }}
-                    onDelete={handleDelete}
-                />
+            <ItemTable
+                items={itemState}
+                label="Počet položek: "
+                onEdit={(id) => {
+                    setEditId(id);
+                    setShowModal(true);
+                }}
+                onDelete={handleDelete}
+                purchased={handleCheck}
+            />
 
-                <ItemForm
-                    show={showModal}
-                    onClose={() => setShowModal(false)}
-                    id={editId}
-                    onSaved={loadItems}
-                    items={itemState}
-                    listId={id}
-                    setItems={setItemState}
-                />
-            </div>
+            <ItemForm
+                show={showModal}
+                onClose={() => setShowModal(false)}
+                id={editId}
+                onSaved={loadItems}
+                items={itemState}
+                listId={id}
+                setItems={setItemState}
+            />
         </div>
+    </div>
 
-    );
+);
 };
 
 export default ItemIndex;

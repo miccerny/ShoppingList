@@ -14,27 +14,28 @@ const ListTable = ({ label, items, onEdit, onDelete, setShareOpen }) => {
                             <div className="card-body d-flex flex-column">
 
                                 
-                                    <div className="btn btn-group mb-3 btn-success justify-content-center">
-                                        <Link to={`/list/show/${list._id || list.id}`}>
-                                            <h4 className="">
+                                    <div className="btn mb-3 justify-content-center">
+                                        <Link to={`/list/show/${list._id || list.id}`}
+                                        className="list-clickable mb-3">
+                                            <h4 className="m-0">
                                                 {list.name}
                                             </h4>
                                         </Link>
                                     </div>
         
                                     <div className="d-flex justify-content-start align-items-center gap-2">
-                                    <button className="btn btn-sm btn-secondary mt-2 w-100 w-md-auto" onClick={() => setShareOpen((list._id || list.id))}>
+                                    <button className="btn btn-modern btn-share mt-2 w-100 w-md-auto" onClick={() => setShareOpen((list._id || list.id))}>
                                         Sdílet
                                     </button>
 
                                     <button
-                                        className="btn btn-sm btn-primary mt-2 w-100 w-md-auto"
+                                        className="btn btn-modern btn-edit mt-2 w-100 w-md-auto"
                                         onClick={() => onEdit(list._id || list.id)}
                                     >
                                         Upravit
                                     </button>
                                     <button
-                                        className="btn btn-sm btn-danger mt-2 w-100 w-md-auto"
+                                        className="btn btn-modern btn-delete mt-2 w-100 w-md-auto"
                                         onClick={() => onDelete(list._id || list.id)}
                                     >
                                         Smazat

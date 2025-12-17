@@ -1,26 +1,26 @@
 import React from "react";
+import "../styles/inuputcheck.css";
 
-export function InputCheck(props) {
+export function InputCheck({ type, name, checked, value, label, onChange }) {
     const INPUTS = ["checkbox", "radio"];
+    const safeType = (type || "").toLowerCase();
 
-    const type = props.type.toLowerCase();
-    const checked = props.checked || '';
-
-    if(!INPUTS.includes(type)){
+    if (!INPUTS.includes(safeType)) {
         return null;
     }
 
-    return(
-        <div className="form-group form-check">
-            <label className="form-check-label">
+    return (
+        <div className="form-group form-check me-3">
+            <label className="modern-check">
                 <input
-                    type={props.name}
-                    className="form-check-input"
-                    name={props.value}
+                    type={safeType}
+                    name={name}
                     checked={checked}
-                    onChange={props.handleChange}
+                    value={value}
+                    onChange={onChange}
                 />{" "}
-                {props.label}
+                <span className="custom-indicator"></span>
+                <span className="label-text">{label}</span>
             </label>
         </div>
     );

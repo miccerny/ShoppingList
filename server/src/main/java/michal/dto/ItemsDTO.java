@@ -29,5 +29,5 @@ public class ItemsDTO {
     private Long listId;
 
     /** Indicates whether the item is checked (completed). */
-    private boolean tick;
+    private boolean purchased;
 }

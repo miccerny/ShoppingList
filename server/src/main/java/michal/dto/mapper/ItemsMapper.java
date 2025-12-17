@@ -2,6 +2,7 @@ package michal.dto.mapper;
 
 import michal.dto.ItemsDTO;
 import michal.entity.ItemsEntity;
+import michal.entity.ListEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -20,4 +21,5 @@ public interface ItemsMapper {
     /** Converts an ItemsEntity to an ItemsDTO (maps list.id → listId). */
     @Mapping(target = "listId", source = "list.id")
     ItemsDTO toDTO(ItemsEntity source);
+
 }

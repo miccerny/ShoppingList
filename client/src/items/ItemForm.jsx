@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { apiGetById, apiPost, apiPut } from "../utils/api";
+import { apiGet, apiPost, apiPut } from "../utils/api";
 import InputField from "../components/InputField";
 import { useSession } from "../contexts/session";
-import { saveGuestList, loadGuestList, saveGuestLists } from "../Lists/GuestList";
+import {loadGuestList, saveGuestLists, updateGuestItems } from "../Lists/GuestList";
 
 const ItemForm = ({ show, onClose, id, items, setItems, onSaved, listId }) => {
   const [itemName, setItemName] = useState("");
-  const [itemCount, setItemCount] = useState(0);
+  const [itemCount, setItemCount] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { session } = useSession();
@@ -21,7 +21,7 @@ const ItemForm = ({ show, onClose, id, items, setItems, onSaved, listId }) => {
     // 🟢 Online režim
     if (session.status === "authenticated") {
       setLoading(true);
-      apiGetById(`/list/${listId}/items/${id}`)
+      apiGet(`/list/${listId}/items/${id}`)
         .then((data) => {
           setItemName(data.name);
           setItemCount(data.count);
@@ -33,12 +33,13 @@ const ItemForm = ({ show, onClose, id, items, setItems, onSaved, listId }) => {
       const found = Array.isArray(items)
         ? items.find((i) => String(i.id) === String(id))
         : null;
+
       if (found) {
         setItemName(found.name);
         setItemCount(found.count);
       }
     }
-  }, [id, session, listId, items]);
+  }, [id, session.status, listId, items]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,8 +47,8 @@ const ItemForm = ({ show, onClose, id, items, setItems, onSaved, listId }) => {
     setError(null);
 
     try {
+       // 🟢 Online režim – API volání
       if (session.status === "authenticated") {
-        // 🟢 Online režim – API volání
         const payload = {
           name: itemName,
           count: itemCount,
@@ -60,46 +61,42 @@ const ItemForm = ({ show, onClose, id, items, setItems, onSaved, listId }) => {
           await apiPost(`/list/${listId}/items`, payload);
         }
 
-        onSaved?.(); // obnov seznam z DB
-      } else {
+        onSaved?.();
+        onClose();
+        return; // obnov seznam z DB
+      }
         // 🟡 Offline režim – localStorage
         const safeItems = Array.isArray(items) ? items : [];
         let updatedItems;
 
         if (id) {
+          //editace
           updatedItems = safeItems.map((i) =>
             String(i.id) === String(id)
               ? { ...i, name: itemName, count: itemCount }
               : i
           );
         } else {
+          //nový item
           updatedItems = [
             ...safeItems,
-            { id: Date.now(), name: itemName, count: itemCount },
+            { 
+              id: Date.now(), 
+              name: itemName, 
+              count: itemCount, 
+              purchased: false 
+            },
           ];
         }
 
         // aktualizuj React stav
         setItems(updatedItems);
 
-        // přepiš localStorage pro daný list
-        const all = loadGuestList();
-        const idx = all.findIndex((l) => String(l.id) === String(listId));
-
-        if (idx !== -1) {
-          const updatedList = {
-            ...all[idx],
-            items: [
-              ...(all[idx].items || []),
-              { id: Date.now(), name: itemName, count: itemCount },
-            ],
-          };
-          all[idx] = updatedList;
-          saveGuestLists(all);
-          setItems(updatedItems); 
-        }
-      }
-      onSaved();
+        // update localStorage (JEDINÁ správná cesta)
+        updateGuestItems(listId, updatedItems);
+        
+      
+      onSaved?.();
       onClose();
     } catch (err) {
       console.error("❌ CHYBA při ukládání položky:", err);
@@ -142,7 +139,7 @@ const ItemForm = ({ show, onClose, id, items, setItems, onSaved, listId }) => {
                 label="Počet"
                 prompt="Zadejte množství"
                 value={itemCount}
-                onChange={(e) => setItemCount(Number(e.target.value))}
+                onChange={(e) => setItemCount(e.target.value)}
               />
 
               <button type="submit" className="btn btn-primary" disabled={loading}>

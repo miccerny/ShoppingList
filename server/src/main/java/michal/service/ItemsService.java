@@ -39,7 +39,9 @@ public interface ItemsService {
      * @param itemsDTO updated item data
      * @return updated item
      */
-    ItemsDTO updateItems(ItemsDTO itemsDTO);
+    ItemsDTO updateItems(Long id, ItemsDTO itemsDTO);
+
+    void importItems(Long listId, List<ItemsDTO> items);
 
     /**
      * Removes an item by its ID.

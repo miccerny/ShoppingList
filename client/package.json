@@ -4,6 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "dev:mock": "vite --mode mock",
+    "dev:backend": "vite --mode backend",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",

@@ -3,6 +3,7 @@ package michal.controller;
 import michal.dto.ItemsDTO;
 import michal.service.ItemsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import org.springframework.web.bind.annotation.*;
@@ -50,6 +51,14 @@ public class ItemsController {
         return itemsService.addItems(listId, itemsDTO);
     }
 
+
+
+    @GetMapping("/items/{id}")
+    public ItemsDTO getItemFromList(
+            @PathVariable Long id
+    ) {
+        return itemsService.getItem(id);
+    }
     /**
      * Update an existing item.
      * Example request: PUT /api/list/1/items/5
@@ -59,11 +68,9 @@ public class ItemsController {
      * @return the updated item as DTO
      */
     @PutMapping("/items/{id}")
-    public ItemsDTO update(@RequestBody ItemsDTO itemsDTO) {
-        // Calls the service to update the item
-        return itemsService.updateItems(itemsDTO);
+    public ItemsDTO update(@PathVariable Long id, @RequestBody ItemsDTO itemsDTO) {
+        return itemsService.updateItems(id, itemsDTO);
     }
-
     /**
      * Delete an item by its ID.
      * Example request: DELETE /api/list/1/items/5

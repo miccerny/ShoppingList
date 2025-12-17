@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This controller manages all actions related to shopping lists.
@@ -98,7 +99,7 @@ public class ListController {
     public ResponseEntity<?> shareList(@PathVariable Long listId,
                                        @RequestBody ShareRequestDTO requestDTO){
         listService.shareList(listId, requestDTO.getEmail());
-        return ResponseEntity.ok("List shared succesfully");
+        return ResponseEntity.ok(Map.of("message", "shared"));
     }
 
     /**

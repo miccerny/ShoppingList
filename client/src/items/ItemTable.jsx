@@ -1,45 +1,102 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
+import InputCheck from "../components/InputCheck";
 
-const ItemTable = ({ label, items, onEdit, onDelete }) => {
+const ItemTable = ({ label, items, onEdit, onDelete, purchased }) => {
     console.log("ItemTable items:", items);
     return (
         <div className="mb-3">
-            <p className="card-description">{label}{items.length}</p>
+            {/* Popis seznamu + počet položek */}
+            <p className="card-description">
+                {label}{items.length}
+            </p>
+
+            {/* Pokud nejsou žádné položky */}
             {items.length === 0 ? (
                 <p>Žádné položky</p>
             ) : (
-                <div className="d-flex flex-wrap gap-3">
-                    {items?.map((item, index) =>
-                        <div key={item.id} className="card" style={{ width: "18rem" }}>
-                            <div className="card-body">
-                                <h5 className="card-title">
+                /* list-group = sémantický seznam */
+                <div className="list-group">
+                    {items?.map((item, index) => (
+                        /* 
+                            list-group-item
+                            → vizuálně definuje řádek seznamu (border, padding)
+
+                            d-flex
+                            → všechny vnitřní prvky budou v jednom řádku
+
+                            align-items-center
+                            → vertikální zarovnání checkboxu, textu i tlačítek
+
+                            py-2
+                            → malý vertikální padding (kompaktní výška)
+                        */
+                        <div key={item.id}
+                            className="list-group-item d-flex align-items-center py-2"
+                        >
+
+                            {/* Checkbox – stav zakoupeno */}
+                            <InputCheck
+                                type="checkbox"
+                                name="purchased"
+                                checked={item.purchased}
+                                value={item.id}
+                                label=""
+                                onChange={() => purchased(item.id)}
+                            />
+                            {/*
+                                flex-grow-1
+                                → tenhle blok zabere veškerý volný prostor
+
+                                Díky tomu:
+                                    - text je vlevo
+                                    - tlačítka se vytlačí úplně doprava
+                            */}
+                            <div className="flex-grow-1 ms-2">
+                                {/* Název položky */}
+                                <strong>
                                     {index + 1}. {item.name}
-                                </h5>
-                                <p>
-                                    Množství: {item.count}
-                                </p>
-                                <div className="btn-group">
-                                    <Link to={`/list/show/${item.id}`}>
-                                        Zobrazit
-                                    </Link>
-                                </div>
-                                <button
-                                    className="btn btn-sm btn-primary me-2"
-                                    onClick={() => onEdit(item.id)}
+                                </strong>
+                                {/* Množství – menší, méně rušivé */}
+                                <span className="text-muted ms-2">
+                                    x{item.count}
+                                </span>
+                            </div>
+
+                            {/*
+                                d-flex + gap-2
+                                → tlačítka jsou v řadě
+                                → rovnoměrné mezery mezi nimi
+                            */}
+                            <div className="d-flex gap-2">
+                                {/* Detail položky */}
+                                <Link 
+                                to={`/list/show/${item.id}`}
+                                className="btn btn-modern"
+                                title="Zobrazit"
                                 >
-                                    Upravit
+                                    👁
+                                </Link>
+                            </div>
+                            <div className="d-flex gap-2">
+                                <button
+                                    className="btn btn-modern btn-edit"
+                                    onClick={() => onEdit(item.id)}
+                                    title="Upravit"
+                                >
+                                    ✏️
                                 </button>
                                 <button
-                                    className="btn btn-sm btn-danger"
+                                    className="btn btn-modern btn-delete"
                                     onClick={() => onDelete(item.id)}
+                                    title="Smazat"
                                 >
-                                    Smazat
+                                    🗑
                                 </button>
                             </div>
                         </div>
-                    )}
+                    ))}
 
                 </div>
 

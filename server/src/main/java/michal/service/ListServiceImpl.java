@@ -6,13 +6,15 @@ import michal.dto.mapper.SharedListMapper;
 import michal.entity.ListEntity;
 import michal.entity.SharedListEntity;
 import michal.entity.UserEntity;
+import michal.entity.enumy.ValidationErrorCode;
 import michal.entity.repository.ItemsRepository;
 import michal.entity.repository.ListRepository;
 import michal.entity.repository.SharedListRepository;
 import michal.entity.repository.UserRepository;
+import michal.service.Exception.UserNotLoggedException;
+import michal.service.Exception.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,6 +47,9 @@ public class ListServiceImpl implements ListService {
     @Autowired
     private SharedListRepository sharedListRepository;
 
+    @Autowired
+    private ItemsService itemsService;
+
     /**
      * Creates a new shopping list and assigns it to the currently logged-in user.
      *
@@ -56,7 +61,7 @@ public class ListServiceImpl implements ListService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
-            throw new RuntimeException("Uživatel není přihlášen");
+            throw new UserNotLoggedException("Uživatel není přihlášen");
         }
 
         UserEntity user = (UserEntity) auth.getPrincipal();
@@ -65,6 +70,9 @@ public class ListServiceImpl implements ListService {
         ListEntity listEntity = listMapper.toEntity(listDTO);
         listEntity.setOwner(user);
 
+        if(listEntity.getName().isEmpty()){
+            throw new ValidationException(ValidationErrorCode.LIST_NAME_EMPTY);
+        }
         ListEntity saved = listRepository.save(listEntity);
         return listMapper.toDTO(saved);
     }
@@ -136,6 +144,9 @@ public class ListServiceImpl implements ListService {
             entity.setId(null);
             entity.setOwner(user);
             listRepository.save(entity);
+            if(guest.getItems() !=null && !guest.getItems().isEmpty()){
+                itemsService.importItems(entity.getId(), guest.getItems());
+            }
         }
 
         return ResponseEntity.ok().build();
@@ -156,7 +167,7 @@ public class ListServiceImpl implements ListService {
 
         UserEntity user = (UserEntity) auth.getPrincipal();
 
-        return listRepository.findByOwner_Id(user.getId()).stream()
+        return listRepository.findAllUserAccessibleLists(user.getId()).stream()
                 .map(entity -> {
                     ListDTO listDTO = listMapper.toDTO(entity);
                     listDTO.setItemsCount(itemsRepository.countByListId(entity.getId()));

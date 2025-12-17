@@ -6,8 +6,8 @@ import { SessionProvider, useSession } from './contexts/session';
 import { apiDelete } from './utils/api';
 import LoginPage from './Users/LoginPage';
 import ItemIndex from './items/ItemIndex';
-
-
+import './styles/styles.css'
+import './styles/inuputcheck.css'
 
 
 export function App() {
@@ -20,44 +20,52 @@ export function App() {
   return (
     <BrowserRouter>
       <div className="d-flex flex-column min-vh-100">
-        <div className='col-12 col-sm-10'>
-          <nav className="navbar navbar-expand-lg navbar-light bg-light justify-content-center items-between">
-            <ul className="navbar-nav gap-3">
-              <li className="nav-item">
-                <Link to={"/list"} className="nav-link">
-                  Seznamy
-                </Link>
-              </li>
-            </ul>
-            <ul className='navbar-nav gap-3'>
-              {session.status === "loading" ? (
-                <div className='spinner-border spinner-border-sm' role='status'>
-                  <span className='visually-hidden'>Loading...</span>
-                </div>
-              ) : session.data ? (
-                <>
-                  <li className='nav-item'>{session.data.email}</li>
-                  <li className='nav-item'>
-                    <button className='btn btn-sm btn-secondary' onClick={handleLogoutClick}>
-                      Odhlásit se
-                    </button>
-                  </li>
-                </>
-              ) : (
-                <>
-                  <li className='nav-item'>
-                    <Link to={"/register"} className='nav-link'>Registrace</Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link to={"/login"} className='nav-link'>Přihlásit se</Link>
-                  </li>
-                </>
-              )}
-            </ul>
+        <div className='container'>
+          <nav className="navbar navbar-expand navbar-light bg-light w-100">
+            <div className="d-flex align-items-center w-100">
+              <div className="flex-fill d-flex justify-content-start">
+                {/* tady klidně nic */}
+              </div>
+              <ul className="navbar-nav">
+                <li className="nav-item">
+                  <Link to={"/list"} className="nav-link fw-semibold">
+                    Seznamy
+                  </Link>
+                </li>
+              </ul>
+                <ul className='navbar-nav d-flex gap-3 align-items-center justify-content-end flex-fill'>
+                  {session.status === "loading" ? (
+                    <li className='nav-item'>
+                      <div className='spinner-border spinner-border-sm' role='status'>
+                        <span className='visually-hidden'>Loading...</span>
+                      </div>
+                    </li>
+                  ) : session.data ? (
+                    <>
+                      <li className='nav-item'>{session.data.email}</li>
+                      <li className='nav-item'>
+                        <button className='btn btn-sm btn-secondary' onClick={handleLogoutClick}>
+                          Odhlásit se
+                        </button>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li className='nav-item'>
+                        <Link to={"/register"} className='nav-link'>Registrace</Link>
+                      </li>
+                      <li className='nav-item'>
+                        <Link to={"/login"} className='nav-link'>Přihlásit se</Link>
+                      </li>
+                    </>
+                  )}
+                </ul>
+              </div>
           </nav>
 
-          <main className="flex-grow-1 d-flex justify-content-center align-items-start">
-            <div className="container-fluid text-center mt-4">
+
+          <main className="flex-grow-1">
+            <div className="container text-center mt-4">
               <Routes>
                 <Route index element={<Navigate to={"/list"} />} />
                 <Route path="/list">
@@ -72,7 +80,7 @@ export function App() {
         </div>
       </div>
     </BrowserRouter>
-   
+
   );
 };
 
