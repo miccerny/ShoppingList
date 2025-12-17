@@ -42,6 +42,10 @@ The app supports **guest mode**, where users can create lists locally before reg
 - Toggle items as completed (`tick`)
 - Count total items per list
 
+
+#### Adding Feature:
+Add, update, delete photo or picture within items
+
 ---
 
 ## 🧩 Architecture Overview
@@ -112,6 +116,7 @@ Default URLs:
 Backend → http://localhost:8080
 
 Frontend → http://localhost:5173
+
 
 👤 Author
 
