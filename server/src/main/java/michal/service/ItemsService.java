@@ -1,6 +1,9 @@
 package michal.service;
 
 import michal.dto.ItemsDTO;
+import michal.entity.UserEntity;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
 /**
@@ -39,7 +42,7 @@ public interface ItemsService {
      * @param itemsDTO updated item data
      * @return updated item
      */
-    ItemsDTO updateItems(Long id, ItemsDTO itemsDTO);
+    ItemsDTO updateItems(Long id, ItemsDTO itemsDTO, MultipartFile multipartFile, UserEntity userEntity);
 
     void importItems(Long listId, List<ItemsDTO> items);
 

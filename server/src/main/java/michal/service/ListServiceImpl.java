@@ -143,9 +143,9 @@ public class ListServiceImpl implements ListService {
             ListEntity entity = listMapper.toEntity(guest);
             entity.setId(null);
             entity.setOwner(user);
-            listRepository.save(entity);
+            ListEntity saved = listRepository.save(entity);
             if(guest.getItems() !=null && !guest.getItems().isEmpty()){
-                itemsService.importItems(entity.getId(), guest.getItems());
+                itemsService.importItems(saved.getId(), guest.getItems());
             }
         }
 

@@ -30,4 +30,6 @@ public class ItemsDTO {
 
     /** Indicates whether the item is checked (completed). */
     private boolean purchased;
+
+    private ItemsImageDTO image;
 }

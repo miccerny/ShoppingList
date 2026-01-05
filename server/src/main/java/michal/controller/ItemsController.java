@@ -1,12 +1,17 @@
 package michal.controller;
 
 import michal.dto.ItemsDTO;
+import michal.entity.UserEntity;
 import michal.service.ItemsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * This controller handles all HTTP requests related to items inside a shopping list.
@@ -67,9 +72,28 @@ public class ItemsController {
      * @param itemsDTO the updated item data from the frontend
      * @return the updated item as DTO
      */
-    @PutMapping("/items/{id}")
-    public ItemsDTO update(@PathVariable Long id, @RequestBody ItemsDTO itemsDTO) {
-        return itemsService.updateItems(id, itemsDTO);
+    @PutMapping(
+            value = "/items/{id}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ItemsDTO update(
+            @PathVariable Long id,
+            @RequestPart("item") String itemJson,
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            @AuthenticationPrincipal UserEntity user
+    ) throws Exception {
+
+        if (user == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.UNAUTHORIZED, "UNAUTHORIZED"
+            );
+        }
+
+        ItemsDTO dto = new com.fasterxml.jackson.databind.ObjectMapper()
+                .readValue(itemJson, ItemsDTO.class);
+
+        return itemsService.updateItems(id, dto, file, user);
     }
     /**
      * Delete an item by its ID.

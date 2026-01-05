@@ -1,13 +1,19 @@
 package michal.service;
 
 import michal.dto.ItemsDTO;
+import michal.dto.ItemsImageDTO;
 import michal.dto.mapper.ItemsMapper;
 import michal.entity.ItemsEntity;
+import michal.entity.ItemsImageEntity;
 import michal.entity.ListEntity;
+import michal.entity.UserEntity;
 import michal.entity.repository.ItemsRepository;
 import michal.entity.repository.ListRepository;
+import michal.service.Exception.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
 /**
@@ -24,6 +30,9 @@ public class ItemsServiceImpl implements ItemsService {
 
     @Autowired
     private ListRepository listRepository;
+
+    @Autowired
+    private ImageService imageService;
 
     /**
      * Adds a new item to a specific list.
@@ -79,22 +88,33 @@ public class ItemsServiceImpl implements ItemsService {
      * @return updated item
      */
     @Override
-    public ItemsDTO updateItems(Long id, ItemsDTO itemsDTO) {
+    public ItemsDTO updateItems(Long id, ItemsDTO itemsDTO, MultipartFile multipartFile, UserEntity user) {
         ItemsEntity items = item(id);
+        // tady si klidně nech ownership pro editaci itemu
+        if (!items.getList().getOwner().getId().equals(user.getId())) {
+            throw new ForbiddenException("ITEM_NOT_OWNED");
+        }
+
         items.setName(itemsDTO.getName());
         items.setCount(itemsDTO.getCount());
         items.setPurchased(itemsDTO.isPurchased());
 
-        ItemsEntity updated = itemsRepository.save(items);
-        return itemsMapper.toDTO(updated);
+        ItemsEntity saved = itemsRepository.save(items);
+        imageService.replaceItemImage(saved.getId(), multipartFile, user);
+
+        return itemsMapper.toDTO(itemsRepository.findById(id).orElseThrow());
     }
 
     @Override
     public void importItems(Long listId, List<ItemsDTO> items){
         if(items == null) return;
 
+        ListEntity listRef = listRepository.getReferenceById(listId);
+
         for(ItemsDTO dto: items){
             ItemsEntity itemsEntity = itemsMapper.toEntity(dto);
+            itemsEntity.setId(null);                 // import = nové záznamy (doporučeno)
+            itemsEntity.setList(listRef);
             itemsEntity.setPurchased(dto.isPurchased());
             itemsRepository.save(itemsEntity);
         }
