@@ -1,11 +1,15 @@
 package michal.service;
 
-import michal.dto.ItemsImageDTO;
-import michal.entity.ItemsImageEntity;
 import michal.entity.UserEntity;
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Optional;
 
 public interface ImageService {
 
-    void replaceItemImage(Long itemId, MultipartFile file, UserEntity user);
+    Resource loadImage(Long imageId, UserEntity user);
+    String getImageContentType(Long imageId, UserEntity user);
+    void updateItemImage(Long itemId, MultipartFile file, UserEntity user);
+    void deleteItemImage(Long itemId, UserEntity user);
 }

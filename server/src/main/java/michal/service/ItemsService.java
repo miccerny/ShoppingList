@@ -51,5 +51,5 @@ public interface ItemsService {
      *
      * @param id item ID
      */
-    void removeItem(long id);
+    void removeItem(long id, UserEntity user);
 }

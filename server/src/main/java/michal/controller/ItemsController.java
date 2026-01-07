@@ -1,16 +1,14 @@
 package michal.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import michal.dto.ItemsDTO;
 import michal.entity.UserEntity;
 import michal.service.ItemsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -79,7 +77,7 @@ public class ItemsController {
     )
     public ItemsDTO update(
             @PathVariable Long id,
-            @RequestPart("item") String itemJson,
+            @RequestPart(value = "item", required = false) String itemJson,
             @RequestPart(value = "file", required = false) MultipartFile file,
             @AuthenticationPrincipal UserEntity user
     ) throws Exception {
@@ -90,8 +88,10 @@ public class ItemsController {
             );
         }
 
-        ItemsDTO dto = new com.fasterxml.jackson.databind.ObjectMapper()
-                .readValue(itemJson, ItemsDTO.class);
+        ItemsDTO dto = null;
+        if (itemJson != null && !itemJson.isBlank()) {
+            dto = new ObjectMapper().readValue(itemJson, ItemsDTO.class);
+        }
 
         return itemsService.updateItems(id, dto, file, user);
     }
@@ -102,8 +102,8 @@ public class ItemsController {
      * @param id the ID of the item to delete
      */
     @DeleteMapping("/items/{id}")
-    public void remove(@PathVariable long id) {
+    public void remove(@PathVariable long id, UserEntity user) {
         // Calls the service to remove the item by ID
-        itemsService.removeItem(id);
+        itemsService.removeItem(id, user);
     }
 }

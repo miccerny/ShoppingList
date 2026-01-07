@@ -1,6 +1,5 @@
 package michal.service;
 
-import michal.dto.ItemsImageDTO;
 import michal.dto.mapper.ItemsImageMapper;
 import michal.entity.ItemsImageEntity;
 import michal.entity.ItemsEntity;
@@ -12,13 +11,14 @@ import michal.entity.repository.ItemsRepository;
 import michal.service.Exception.ForbiddenException;
 import michal.service.Exception.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -39,7 +39,8 @@ public class ImageServiceImpl implements ImageService{
     private static final long MAX_SIZE_BYTES = 5L * 1024 * 1024; // 5MB
 
     @Override
-    public void replaceItemImage(Long itemId, MultipartFile file, UserEntity userEntity) {
+    @Transactional
+    public void updateItemImage(Long itemId, MultipartFile file, UserEntity userEntity) {
 
         // obrázek je volitelný
         if(file == null || file.isEmpty()){
@@ -83,7 +84,7 @@ public class ImageServiceImpl implements ImageService{
         // vytvoř novou entitu
         ItemsImageEntity newImage = itemsImageMapper.fromUpload(file, imageType);
         newImage.setStoredName(newStoredName);
-        newImage.setItemId(item);
+        newImage.setItem(item);
         newImage.setCreatedAt(LocalDate.now());
 
         try {
@@ -96,15 +97,68 @@ public class ImageServiceImpl implements ImageService{
             if (oldId != null) {
                 imageRepository.deleteById(oldId);
                 if (oldStoredName != null) {
-                    storageService.delete(userEntity.getId(), oldStoredName);
+                    storageService.deleteStoredFile(userEntity.getId(), oldStoredName);
                 }
             }
 
         } catch (RuntimeException e) {
             // DB spadla, ale soubor už je uložený -> uklid
-            storageService.delete(userEntity.getId(), newStoredName);
+            storageService.deleteStoredFile(userEntity.getId(), newStoredName);
             throw e;
         }
 
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Resource loadImage(Long imageId, UserEntity user) {
+        ItemsImageEntity image = getOwnedImage(imageId, user);
+        return storageService.loadAsResource(
+                user.getId(),
+                image.getStoredName()
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String getImageContentType(Long imageId, UserEntity user) {
+        ItemsImageEntity image = getOwnedImage(imageId, user);
+        return image.getContentType().getContentType(); // nebo image.getContentType()
+    }
+
+    @Override
+    @Transactional
+    public void deleteItemImage(Long itemId, UserEntity user) {
+        ItemsEntity item = itemsRepository.findById(itemId)
+                .orElseThrow(() -> new RuntimeException("ITEM_NOT_FOUND"));
+
+        if (!item.getList().getOwner().getId().equals(user.getId())) {
+            throw new ForbiddenException("ITEM_NOT_OWNED");
+        }
+
+        ItemsImageEntity image = item.getImage();
+        if (image == null) return;
+
+        String storedName = image.getStoredName();
+
+        // DB: odpoj -> orphanRemoval smaže image z DB
+        item.setImage(null);
+        itemsRepository.save(item);
+
+        // FILE: smaž soubor
+        storageService.deleteStoredFile(user.getId(), storedName);
+    }
+
+
+
+    private ItemsImageEntity getOwnedImage(Long imageId, UserEntity user) {
+        ItemsImageEntity image = imageRepository.findById(imageId)
+                .orElseThrow(() -> new RuntimeException("IMAGE_NOT_FOUND"));
+
+        Long ownerId = image.getItem().getList().getOwner().getId();
+        if (!ownerId.equals(user.getId())) {
+            throw new ForbiddenException("IMAGE_NOT_OWNED");
+        }
+        return image;
     }
 }

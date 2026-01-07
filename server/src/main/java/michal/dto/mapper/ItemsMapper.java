@@ -2,9 +2,10 @@ package michal.dto.mapper;
 
 import michal.dto.ItemsDTO;
 import michal.entity.ItemsEntity;
-import michal.entity.ListEntity;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 /**
  * Mapper for converting between {@link ItemsEntity} and {@link ItemsDTO}.
@@ -20,6 +21,15 @@ public interface ItemsMapper {
 
     /** Converts an ItemsEntity to an ItemsDTO (maps list.id → listId). */
     @Mapping(target = "listId", source = "list.id")
+    @Mapping(target = "imageId", source = "image.id")
+    @Mapping(target = "imageUrl", ignore = true)
     ItemsDTO toDTO(ItemsEntity source);
+
+    @AfterMapping
+    default void fillImageUrl(ItemsEntity entity, @MappingTarget ItemsDTO dto) {
+        if (entity.getImage() != null && entity.getImage().getId() != null) {
+            dto.setImageUrl("/api/images/" + entity.getImage().getId());
+        }
+    }
 
 }

@@ -1,10 +1,8 @@
 package michal.service;
 
 import michal.dto.ItemsDTO;
-import michal.dto.ItemsImageDTO;
 import michal.dto.mapper.ItemsMapper;
 import michal.entity.ItemsEntity;
-import michal.entity.ItemsImageEntity;
 import michal.entity.ListEntity;
 import michal.entity.UserEntity;
 import michal.entity.repository.ItemsRepository;
@@ -12,6 +10,7 @@ import michal.entity.repository.ListRepository;
 import michal.service.Exception.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -42,6 +41,7 @@ public class ItemsServiceImpl implements ItemsService {
      * @return created item
      */
     @Override
+    @Transactional
     public ItemsDTO addItems(Long listId, ItemsDTO itemsDTO) {
         if (listId == null) {
             throw new IllegalArgumentException("List ID nesmí být null");
@@ -64,6 +64,7 @@ public class ItemsServiceImpl implements ItemsService {
      * @return found item
      */
     @Override
+    @Transactional(readOnly = true)
     public ItemsDTO getItem(Long id) {
         return itemsMapper.toDTO(item(id));
     }
@@ -75,6 +76,7 @@ public class ItemsServiceImpl implements ItemsService {
      * @return list of items
      */
     @Override
+    @Transactional(readOnly = true)
     public List<ItemsDTO> getAllItems(Long listId) {
         return itemsRepository.findByListId(listId).stream()
                 .map(itemsMapper::toDTO)
@@ -88,30 +90,39 @@ public class ItemsServiceImpl implements ItemsService {
      * @return updated item
      */
     @Override
+    @Transactional
     public ItemsDTO updateItems(Long id, ItemsDTO itemsDTO, MultipartFile multipartFile, UserEntity user) {
-        ItemsEntity items = item(id);
+        ItemsEntity items = itemsRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("ITEM_NOT_FOUND"));
+
         // tady si klidně nech ownership pro editaci itemu
         if (!items.getList().getOwner().getId().equals(user.getId())) {
             throw new ForbiddenException("ITEM_NOT_OWNED");
         }
 
-        items.setName(itemsDTO.getName());
-        items.setCount(itemsDTO.getCount());
-        items.setPurchased(itemsDTO.isPurchased());
+        if (itemsDTO != null) {
+            items.setName(itemsDTO.getName());
+            items.setCount(itemsDTO.getCount());
+            items.setPurchased(itemsDTO.isPurchased());
+        }
 
         ItemsEntity saved = itemsRepository.save(items);
-        imageService.replaceItemImage(saved.getId(), multipartFile, user);
+        
+        if(multipartFile != null &&!multipartFile.isEmpty()) {
+            imageService.updateItemImage(saved.getId(), multipartFile, user);
+        }
 
         return itemsMapper.toDTO(itemsRepository.findById(id).orElseThrow());
     }
 
     @Override
-    public void importItems(Long listId, List<ItemsDTO> items){
-        if(items == null) return;
+    @Transactional
+    public void importItems(Long listId, List<ItemsDTO> items) {
+        if (items == null) return;
 
         ListEntity listRef = listRepository.getReferenceById(listId);
 
-        for(ItemsDTO dto: items){
+        for (ItemsDTO dto : items) {
             ItemsEntity itemsEntity = itemsMapper.toEntity(dto);
             itemsEntity.setId(null);                 // import = nové záznamy (doporučeno)
             itemsEntity.setList(listRef);
@@ -126,9 +137,11 @@ public class ItemsServiceImpl implements ItemsService {
      * @param id item ID
      */
     @Override
-    public void removeItem(long id) {
-        ItemsEntity itemsEntity = item(id);
-        itemsRepository.delete(itemsEntity);
+    @Transactional
+    public void removeItem(long id, UserEntity user) {
+
+        imageService.deleteItemImage((long) id, user );
+        itemsRepository.delete(item(id));
     }
 
     /**

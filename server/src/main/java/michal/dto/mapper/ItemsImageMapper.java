@@ -12,13 +12,13 @@ public interface ItemsImageMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "storedName", ignore = true)
-    @Mapping(target = "itemId", ignore = true)
+    @Mapping(target = "item", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "size", source = "file.size")
     @Mapping(target = "originalName", source = "file.originalFilename")
     @Mapping(target = "contentType", source = "imageType")
     ItemsImageEntity fromUpload(MultipartFile file, ImageType imageType);
 
-    @Mapping(target = "itemsId", source = "itemId.id")
+    @Mapping(target = "itemsId", source = "item.id")
     ItemsImageDTO toDTO(ItemsImageEntity source);
 }

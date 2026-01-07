@@ -1,5 +1,6 @@
 package michal.service;
 
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -7,6 +8,7 @@ import java.io.InputStream;
 @Service
 public interface StorageService {
 
+    Resource loadAsResource(Long userId, String storedName);
     void save(Long userId, String storedName, InputStream inputStream);
-    void delete(Long userId, String storedName);
+    void deleteStoredFile(Long userId, String storedName);
 }

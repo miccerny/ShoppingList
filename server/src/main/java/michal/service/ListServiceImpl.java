@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -57,6 +58,7 @@ public class ListServiceImpl implements ListService {
      * @return created list
      */
     @Override
+    @Transactional
     public ListDTO addList(ListDTO listDTO) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -84,6 +86,7 @@ public class ListServiceImpl implements ListService {
      * @return list including items
      */
     @Override
+    @Transactional(readOnly = true)
     public ListDTO getListWithItems(Long id) {
         return listMapper.toDTO(list(id));
     }
@@ -102,6 +105,7 @@ public class ListServiceImpl implements ListService {
      * @throws RuntimeException if the list or user does not exist
      */
     @Override
+    @Transactional
     public void shareList(Long listId, String email){
         // Load the list to be shared; fail if it does not exist
         ListEntity list = listRepository.findById(listId)
@@ -129,6 +133,7 @@ public class ListServiceImpl implements ListService {
      * @return HTTP response with result
      */
     @Override
+    @Transactional
     public ResponseEntity<Void> importList(List<ListDTO> guestList) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -158,6 +163,7 @@ public class ListServiceImpl implements ListService {
      * @return list of user's lists
      */
     @Override
+    @Transactional(readOnly = true)
     public List<ListDTO> getAllByOwner() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 

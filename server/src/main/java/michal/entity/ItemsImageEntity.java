@@ -29,7 +29,7 @@ public class ItemsImageEntity {
 
     @OneToOne
     @JoinColumn(name = "item_id", unique = true, nullable = false)
-    private ItemsEntity itemId;
+    private ItemsEntity item;
 
     @Column
     private LocalDate createdAt;
