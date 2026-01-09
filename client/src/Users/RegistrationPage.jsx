@@ -1,15 +1,19 @@
 import InputField from "../components/InputField"
-import FlashMessage from "../components/FlashMessage";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { apiPost } from "../utils/api";
 import { HttpRequestError } from "../Error/HttpRequstError";
+import { useFlash } from "../contexts/flash";
 
 
 const RegistrationPage = () => {
     const nav = useNavigate();
-    const [errorMessageState, setErrorMessageState] = useState(null);
-    const [valuesState, setValuesState] = useState({ password: "", confirmPassword: "", email: "" });
+    const { showFlash } = useFlash();
+    const [valuesState, setValuesState] = useState({
+        password: "",
+        confirmPassword: "",
+        email: ""
+    });
     const [fieldErrors, setFieldErrors] = useState({});
     const [touched, setTouched] = useState({});
     const errorMessages = {
@@ -20,7 +24,8 @@ const RegistrationPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setErrorMessageState(null);
+        setFieldErrors({});
+        setTouched({});
 
         if (valuesState.password !== valuesState.confirmPassword) {
             setFieldErrors({
@@ -36,12 +41,17 @@ const RegistrationPage = () => {
 
         try {
             await apiPost("/register", registrationData);
+            showFlash("success", "Registrace proběhla úspěšně. Nyní se můžete přihlásit.");
             nav("/login");
         } catch (e) {
             if (e instanceof HttpRequestError) {
-
+                let data;
                 // 🔑 TADY je ta změna: json místo text()
-                const data = await e.response.json();
+                try {
+                    data = await e.response.json();
+                } catch {
+
+                }
                 console.log("ERROR RESPONSE:", data);
                 if (data?.field && data?.code) {
                     setFieldErrors(prev => ({
@@ -55,17 +65,17 @@ const RegistrationPage = () => {
                     }));
 
                 } else {
-                    setErrorMessageState("Nepodařilo se odeslat formulář");
+                    showFlash("danger", "Registrace se nezdařila.");
                 }
             } else {
-                setErrorMessageState("Neočekávaná chyba aplikace");
+                showFlash("danger", "Neočekávaná chyba během registrace.");
             }
         }
     };
     const handleChange = (e) => {
         const fieldName = e.target.name;
         setValuesState(prev => ({
-            ...prev, [fieldName]: e.target.value 
+            ...prev, [fieldName]: e.target.value
         }));
         setFieldErrors(prev => ({
             ...prev,
@@ -81,45 +91,48 @@ const RegistrationPage = () => {
     };
 
     return (
-        <div>
+        <div className="registration-page">
             <h1>Registrace</h1>
             <form onSubmit={handleSubmit}>
-                {errorMessageState ? <FlashMessage theme={"danger"} text={errorMessageState}></FlashMessage> : null}
-                <InputField
-                    type="email"
-                    name="email"
-                    label="E-mail"
-                    prompt="Zadejte váš email"
-                    value={valuesState.email}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    error={fieldErrors.email}
-                    touched={touched.email}
-                />
-                <InputField
-                    type="password"
-                    name="password"
-                    label="Heslo"
-                    prompt="Zadejte Vaše heslo"
-                    min={6}
-                    value={valuesState.password}
-                    onChange={handleChange}
-                    error={fieldErrors.password}
-                    touched={touched.password}
-                    onBlur={handleBlur}
-                />
-                <InputField
-                    type="password"
-                    name="confirmPassword"
-                    label="Heslo znovu"
-                    prompt="Zadejte Vaše heslo znovu"
-                    value={valuesState.confirmPassword}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    error={fieldErrors.confirmPassword}
-                    touched={touched.confirmPassword}
-                />
-
+                <div className="registration-form">
+                    <InputField
+                        type="email"
+                        name="email"
+                        label="E-mail"
+                        prompt="Zadejte váš email"
+                        value={valuesState.email}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={fieldErrors.email}
+                        touched={touched.email}
+                        required={true}
+                    />
+                    <InputField
+                        type="password"
+                        name="password"
+                        label="Heslo"
+                        prompt="Zadejte Vaše heslo"
+                        min={6}
+                        value={valuesState.password}
+                        onChange={handleChange}
+                        error={fieldErrors.password}
+                        touched={touched.password}
+                        onBlur={handleBlur}
+                        required={true}
+                    />
+                    <InputField
+                        type="password"
+                        name="confirmPassword"
+                        label="Heslo znovu"
+                        prompt="Zadejte Vaše heslo znovu"
+                        value={valuesState.confirmPassword}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={fieldErrors.confirmPassword}
+                        touched={touched.confirmPassword}
+                        required={true}
+                    />
+                </div>
                 <input type="submit" className="btn btn-primary mt-2" value="Registrovat se"></input>
             </form>
         </div>

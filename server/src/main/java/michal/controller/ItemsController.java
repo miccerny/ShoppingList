@@ -1,6 +1,6 @@
 package michal.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import michal.dto.ItemsDTO;
 import michal.entity.UserEntity;
 import michal.service.ItemsService;
@@ -71,29 +71,31 @@ public class ItemsController {
      * @return the updated item as DTO
      */
     @PutMapping(
-            value = "/items/{id}",
+            value = "/items/{id}/image",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ItemsDTO update(
+    public ItemsDTO updateItemImage(
+            @PathVariable Long listId,
             @PathVariable Long id,
-            @RequestPart(value = "item", required = false) String itemJson,
-            @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestPart("file") MultipartFile file,
             @AuthenticationPrincipal UserEntity user
     ) throws Exception {
+        return itemsService.updateItemImage(id, file, user);
+    }
 
-        if (user == null) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.UNAUTHORIZED, "UNAUTHORIZED"
-            );
-        }
-
-        ItemsDTO dto = null;
-        if (itemJson != null && !itemJson.isBlank()) {
-            dto = new ObjectMapper().readValue(itemJson, ItemsDTO.class);
-        }
-
-        return itemsService.updateItems(id, dto, file, user);
+    @PutMapping(
+            value = "/items/{id}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ItemsDTO updateItem(
+            @PathVariable Long listId,
+            @PathVariable Long id,
+            @RequestBody ItemsDTO dto,
+            @AuthenticationPrincipal UserEntity user
+    ) {
+        return itemsService.updateItem(id, dto, user);
     }
     /**
      * Delete an item by its ID.

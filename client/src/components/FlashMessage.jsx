@@ -1,6 +1,4 @@
-import React from "react";
-
-export function FLashMessage({theme, text}) {
+export function FlashMessage({theme, text}) {
     return <div className={"alert alert-" + theme}>{text}</div>
 }
-export default FLashMessage;
+export default FlashMessage;

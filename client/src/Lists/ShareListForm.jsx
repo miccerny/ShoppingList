@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { apiPost } from "../utils/api";
+import { useFlash } from "../contexts/flash";
 
 const ShareListForm = ({ show, onClose, listId }) => {
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null);
+    const { showFlash } = useFlash();
 
     if (!show) {
         return null;
@@ -14,29 +14,21 @@ const ShareListForm = ({ show, onClose, listId }) => {
     const handleShare = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError(null);
-        setSuccess(null);
 
         try {
             await apiPost(`/list/${listId}`, { email });
-            setSuccess("Sdílení prověhlo úspěšně");
-            setEmail("")
-            setTimeout(() => {
-                setSuccess(null);
-            }, 2000);
-
+            showFlash("success", "Seznam byl sdílen.");
+            setEmail("");
+            onClose();
+            
         } catch (err) {
-            if(err.response?.status ===409){
-            setError("Sdílení se nezdařilo");
-            }else if(err.response?.status === 404){
-                setError("Uživatel s tímto emailem neexistuje");
-            }else {
-                setError ("Sdílení se nezdařilo");
+            if (err.response?.status === 409) {
+                showFlash("danger", "Sdílení se nezdařilo.");
+            } else if (err.response?.status === 404) {
+                showFlash("danger", "Uživatel s tímto emailem neexistuje");
+            } else {
+                showFlash("danger", "Sdílení se nezdařilo");
             }
-
-            setTimeout(() =>{
-                setError(null);
-            }, 3000);
 
         } finally {
             setLoading(false);
@@ -52,8 +44,6 @@ const ShareListForm = ({ show, onClose, listId }) => {
                         <button type="button" className="btn-close" onClick={onClose}></button>
                     </div>
                     <div className="modal-body">
-                        {error && <div className="alert alert-danger text-center">{error}</div>}
-                        {success && <div className="alert alert-success text-center">{success}</div>}
                         <form onSubmit={handleShare}>
                             <input
                                 required

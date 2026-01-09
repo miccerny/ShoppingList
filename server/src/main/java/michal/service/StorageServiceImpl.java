@@ -42,6 +42,7 @@ public class StorageServiceImpl implements StorageService{
             if(!resource.exists() ||!resource.isReadable()){
                 throw new RuntimeException("FILE_NOT_FOUND");
             }
+            System.out.println("File:  " + file + " was loaded.");
             return  resource;
         }catch (Exception e){
             throw new RuntimeException("FILE_LOAD_FAILED", e);
@@ -54,6 +55,7 @@ public class StorageServiceImpl implements StorageService{
         try{
             Path file = Paths.get(ROOT_DIR, userId.toString(), storedName);
             Files.deleteIfExists(file);
+            System.out.println("File was removed " + file);
         }catch (IOException e){
             throw new RuntimeException("FAILED_TO_DELETE_FILE", e);
         }

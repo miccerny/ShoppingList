@@ -76,6 +76,7 @@ public class ListServiceImpl implements ListService {
             throw new ValidationException(ValidationErrorCode.LIST_NAME_EMPTY);
         }
         ListEntity saved = listRepository.save(listEntity);
+        System.out.println("List: " + saved.getName() + ", ID " + saved.getId() + " was saved");
         return listMapper.toDTO(saved);
     }
 
@@ -88,6 +89,7 @@ public class ListServiceImpl implements ListService {
     @Override
     @Transactional(readOnly = true)
     public ListDTO getListWithItems(Long id) {
+        System.out.println("List with ID " + id + " was loaded");
         return listMapper.toDTO(list(id));
     }
 
@@ -124,6 +126,7 @@ public class ListServiceImpl implements ListService {
 
         // Save the relation so the user gains access to the list
         sharedListRepository.save(sharedList);
+        System.out.println("List with ID " + sharedList.getId() + " was shared to user with email " + email);
     }
 
     /**
@@ -153,7 +156,7 @@ public class ListServiceImpl implements ListService {
                 itemsService.importItems(saved.getId(), guest.getItems());
             }
         }
-
+        System.out.println("List " + guestList + " was imported form web browser to database");
         return ResponseEntity.ok().build();
     }
 
@@ -177,6 +180,7 @@ public class ListServiceImpl implements ListService {
                 .map(entity -> {
                     ListDTO listDTO = listMapper.toDTO(entity);
                     listDTO.setItemsCount(itemsRepository.countByListId(entity.getId()));
+                    System.out.println("List by user " + user.getEmail() + ": " + listDTO.getName() + ", Number of items in list: " + listDTO.getItemsCount());
                     return listDTO;
                 })
                 .toList();
@@ -206,6 +210,7 @@ public class ListServiceImpl implements ListService {
     public void removeList(long id) {
         ListEntity existing = list(id);
         listRepository.delete(existing);
+        System.out.println("List with ID number" + existing.getId() + " and name " + existing.getName() + " was removed");
     }
 
     /**

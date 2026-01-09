@@ -1,6 +1,5 @@
 import { HttpRequestError } from "../Error/HttpRequstError";
 
-
 const DEV = import.meta.env.DEV;
 const MODE = import.meta.env.VITE_API_MODE;  // mock | backend
 const BACKEND = import.meta.env.VITE_BACKEND_URL;
@@ -19,7 +18,9 @@ console.log("🔧 API_MODE:", import.meta.env.VITE_API_MODE);
 console.info("🔧 API_URL:", API_URL);
 
 export async function apiGet(endpoint, options = {}) {
+
   console.log("➡️ FETCH:", `${API_URL}${endpoint}`);
+
   const response = await fetch(`${API_URL}${endpoint}`, {
     method: "GET",
     headers: {
@@ -65,19 +66,26 @@ export async function apiPost(endpoint, data) {
 }
 
 export async function apiPut(endpoint, data) {
+  
+  const isFormData = data instanceof FormData;
+  console.log("➡️ FETCH PUT:", `${API_URL}${endpoint}`, isFormData ? "(FormData)" : data);
+
   const response = await fetch(`${API_URL}${endpoint}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: isFormData ? undefined : { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify(data),
+    body: isFormData ? data : JSON.stringify(data),
   });
   if (!response.ok) {
     throw new HttpRequestError(
-      `Chyba při úpravě ${endpoint}/${id}: ${response.status}: ${response.statusText}`, response
+      `Chyba při úpravě ${endpoint}: ${response.status}: ${response.statusText}`, response
     );
   }
+
   if (response.status === 204) return null;
-  return await response.json();
+
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
 }
 
 export async function apiDelete(endpoint) {
@@ -87,7 +95,7 @@ export async function apiDelete(endpoint) {
   });
   if (!response.ok) {
     throw new HttpRequestError(
-      `Chyba při mazání ${endpoint}/${id} ${response.status}: ${response.statusText}`, response
+      `Chyba při mazání ${endpoint}: ${response.status}: ${response.statusText}`, response
     );
   }
 }

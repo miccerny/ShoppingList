@@ -61,7 +61,8 @@ public class ApplicationSecurityConfiguration {
                 // Define which requests are allowed without login
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/register", "/api/login", "/api/me").permitAll() // public endpoints
-                        .requestMatchers("/api/list/**").permitAll() // public list endpoints
+                        .requestMatchers("/api/list/**").permitAll()// public list endpoints
+                        .requestMatchers("/api/images/**").permitAll()
                         .anyRequest().authenticated() // everything else requires login
                 )
                 // Configure logout endpoint and response

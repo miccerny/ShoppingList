@@ -39,10 +39,12 @@ public interface ItemsService {
     /**
      * Updates an existing item.
      *
-     * @param itemsDTO updated item data
+     * @param  dto item data
      * @return updated item
      */
-    ItemsDTO updateItems(Long id, ItemsDTO itemsDTO, MultipartFile multipartFile, UserEntity userEntity);
+    ItemsDTO updateItem(Long id, ItemsDTO dto, UserEntity user);
+
+    ItemsDTO updateItemImage(Long id, MultipartFile file, UserEntity user);
 
     void importItems(Long listId, List<ItemsDTO> items);
 

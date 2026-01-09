@@ -1,8 +1,7 @@
-import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
 
-const ListTable = ({ label, items, onEdit, onDelete, setShareOpen }) => {
+const ListTable = ({ label, items, onEdit, onDelete, setShareOpen, flash }) => {
     return (
         <div className="mb-3">
             <p className="card-description">{label}{items.length}</p>

@@ -18,8 +18,8 @@ export function InputField(props) {
     const hasError = touched && error;
 
     return (
-        <div className="form-group">
-            <label>{props.label}</label>
+        <div className="input-group-custom">
+            <label htmlFor={props.name} className="input-label">{props.label}</label>
             {/* vykreslení aktuálního elementu */}
             {isTextArea ? (
                 <textarea

@@ -3,6 +3,7 @@ package michal.service;
 import michal.dto.ItemsDTO;
 import michal.dto.mapper.ItemsMapper;
 import michal.entity.ItemsEntity;
+import michal.entity.ItemsImageEntity;
 import michal.entity.ListEntity;
 import michal.entity.UserEntity;
 import michal.entity.repository.ItemsRepository;
@@ -54,6 +55,7 @@ public class ItemsServiceImpl implements ItemsService {
         ItemsEntity saved = itemsRepository.save(items);
 
         // Return mapped DTO
+        System.out.println("Item with ID " + saved.getId() + " and name " + saved.getName() + " was saved.");
         return itemsMapper.toDTO(saved);
     }
 
@@ -81,6 +83,7 @@ public class ItemsServiceImpl implements ItemsService {
         return itemsRepository.findByListId(listId).stream()
                 .map(itemsMapper::toDTO)
                 .toList();
+
     }
 
     /**
@@ -91,28 +94,36 @@ public class ItemsServiceImpl implements ItemsService {
      */
     @Override
     @Transactional
-    public ItemsDTO updateItems(Long id, ItemsDTO itemsDTO, MultipartFile multipartFile, UserEntity user) {
-        ItemsEntity items = itemsRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("ITEM_NOT_FOUND"));
-
-        // tady si klidně nech ownership pro editaci itemu
-        if (!items.getList().getOwner().getId().equals(user.getId())) {
-            throw new ForbiddenException("ITEM_NOT_OWNED");
-        }
+    public ItemsDTO updateItem(Long id, ItemsDTO itemsDTO, UserEntity user) {
+        ItemsEntity item = getOwnedItem(id, user);
 
         if (itemsDTO != null) {
-            items.setName(itemsDTO.getName());
-            items.setCount(itemsDTO.getCount());
-            items.setPurchased(itemsDTO.isPurchased());
+            item.setName(itemsDTO.getName());
+            item.setCount(itemsDTO.getCount());
+            item.setPurchased(itemsDTO.isPurchased());
         }
 
-        ItemsEntity saved = itemsRepository.save(items);
-        
-        if(multipartFile != null &&!multipartFile.isEmpty()) {
-            imageService.updateItemImage(saved.getId(), multipartFile, user);
+        ItemsEntity saved = itemsRepository.save(item);
+
+        return itemsMapper.toDTO(saved);
+    }
+
+    @Override
+    public ItemsDTO updateItemImage(Long id, MultipartFile file, UserEntity user){
+        ItemsEntity item = getOwnedItem(id, user);
+
+        if (file == null || file.isEmpty()) {
+            // you can either return current state, or throw 400
+            return itemsMapper.toDTO(item);
         }
 
-        return itemsMapper.toDTO(itemsRepository.findById(id).orElseThrow());
+        // smazání starého obrázku (pokud existuje)
+        imageService.updateItemImage(item.getId(), file, user);
+
+        ItemsEntity refreshed = itemsRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("ITEM_NOT_FOUND"));
+
+        return itemsMapper.toDTO(refreshed);
     }
 
     @Override
@@ -153,5 +164,20 @@ public class ItemsServiceImpl implements ItemsService {
     private ItemsEntity item(long id) {
         return itemsRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Položka s ID " + id + " nenalezena"));
+    }
+
+    private ItemsEntity getOwnedItem(Long itemId, UserEntity user) {
+        ItemsEntity item = itemsRepository.findById(itemId)
+                .orElseThrow(() -> new RuntimeException("ITEM_NOT_FOUND"));
+
+        if (user == null || item.getList() == null || item.getList().getOwner() == null) {
+            throw new ForbiddenException("ITEM_NOT_OWNED");
+        }
+
+        if (!item.getList().getOwner().getId().equals(user.getId())) {
+            throw new ForbiddenException("ITEM_NOT_OWNED");
+        }
+
+        return item;
     }
 }

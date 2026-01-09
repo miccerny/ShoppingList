@@ -2,6 +2,7 @@ import App from './App.jsx';
 import "bootstrap/dist/css/bootstrap.min.css";
 import ReactDOM from 'react-dom/client';
 import { SessionProvider } from './contexts/session.jsx';
+import { FlashProvider } from './contexts/flash.jsx';
 
 
 // "mock" | "backend"
@@ -46,7 +47,9 @@ async function enableMocking() {
 enableMocking().then(() => {
   ReactDOM.createRoot(document.getElementById('root')).render(
     <SessionProvider>
+      <FlashProvider>
       <App />
+      </FlashProvider>
     </SessionProvider>
   );
 });

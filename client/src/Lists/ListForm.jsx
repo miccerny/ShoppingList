@@ -3,12 +3,14 @@ import { apiGetById, apiPost, apiPut } from "../utils/api";
 import { saveGuestList } from "./GuestList";
 import InputField from "../components/InputField";
 import { useSession } from "../contexts/session";
+import { useFlash } from "../contexts/flash";
 
 const ListForm = ({ show, onClose, id, lists, setLists, onSaved }) => {
     const [listName, setListName] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const { session } = useSession();
+    const { showFlash } = useFlash();
 
     useEffect(() => {
 
@@ -25,7 +27,7 @@ const ListForm = ({ show, onClose, id, lists, setLists, onSaved }) => {
                     setLoading(false);
                 })
                 .catch(() => {
-                    setError("Nepodařilo se načíst seznam");
+                    showFlash("danger", "Nepodařilo se načíst seznam");
                     setLoading(false);
                 });
         } else {
@@ -68,9 +70,12 @@ const ListForm = ({ show, onClose, id, lists, setLists, onSaved }) => {
                 saveGuestList(updatedLists);
                 setLists(updatedLists);
             }
-            setLoading(false)
+
+            showFlash("success", id ? "Seznam upraven." : "Seznam vytvořen.");
+            setLoading(false);
             onClose();
         } catch (err) {
+            showFlash("danger", "Uložení se nezdařilo.");
             setError("Uložení se nezdařilo");
             setLoading(false);
         }
@@ -101,7 +106,7 @@ const ListForm = ({ show, onClose, id, lists, setLists, onSaved }) => {
                                 onChange={(e) => setListName(e.target.value)}
                             />
 
-                            <button type="submit" className="btn tbn-primary" disabled={loading}>
+                            <button type="submit" className="btn btn-primary" disabled={loading}>
                                 {loading ? "Ukládám..." : "Uložit"}
                             </button>
                         </form>
