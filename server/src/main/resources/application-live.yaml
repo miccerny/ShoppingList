@@ -2,6 +2,8 @@ spring:
   datasource:
     url: ${JDBC_DATABASE_URL}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      connectionTimeout: 10000
 
   jpa:
     show-sql: true
@@ -18,3 +20,13 @@ server:
 
 springdoc:
   api-docs.path: /api-docs
+
+logging:
+  level:
+    com:
+      zaxxer:
+        hikari: DEBUG
+    org:
+      springframework:
+        jdbc: DEBUG
+
