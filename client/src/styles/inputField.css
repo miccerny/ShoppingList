@@ -1,0 +1,7 @@
+.form-input {
+  width: clamp(240px, 50vw, 420px);
+  padding: 10px;
+}
+.input-group-custom {
+  margin-bottom: 1rem;
+}
