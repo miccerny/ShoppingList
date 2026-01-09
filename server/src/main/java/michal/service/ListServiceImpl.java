@@ -166,7 +166,7 @@ public class ListServiceImpl implements ListService {
      * @return list of user's lists
      */
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<ListDTO> getAllByOwner() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
