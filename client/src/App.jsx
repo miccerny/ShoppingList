@@ -7,7 +7,7 @@ import { apiDelete } from './utils/api';
 import LoginPage from './Users/LoginPage';
 import ItemIndex from './items/ItemIndex';
 import './styles/styles.css'
-import './styles/inuputCheck.css'
+import './styles/inputCheck.css'
 import './styles/inputField.css'
 import './styles/LoginPage.css'
 import './styles/navbar.css'

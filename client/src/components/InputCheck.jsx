@@ -1,5 +1,4 @@
-import React from "react";
-import "../styles/inuputcheck.css";
+import "../styles/inputCheck.css";
 
 export function InputCheck({ type, name, checked, value, label, onChange }) {
     const INPUTS = ["checkbox", "radio"];
