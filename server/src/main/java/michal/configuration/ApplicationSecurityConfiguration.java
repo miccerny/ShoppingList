@@ -97,7 +97,7 @@ public class ApplicationSecurityConfiguration {
 
         // Allow requests from this origin (React dev server)
         configuration.setAllowedOrigins(List.of("http://localhost:5173",
-                "https://sholist.netlify.app"));
+                "https://sholist.netlify.app/**"));
 
         // Allow common HTTP methods
         configuration.setAllowedMethods(List.of("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS"));
