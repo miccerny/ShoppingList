@@ -1,0 +1,65 @@
+.modern-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 16px;
+    position: relative;
+}
+
+/* Schováme původní input */
+.modern-check input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Vzhled moderního checkboxu / rádia */
+.custom-indicator {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #888;
+    border-radius: 6px;
+    transition: all 0.25s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Radio místo čtverečku */
+.modern-check input[type="radio"] + .custom-indicator {
+    border-radius: 50%;
+}
+
+/* Hover efekt */
+.modern-check:hover .custom-indicator {
+    border-color: #4caf50;
+}
+
+/* CHECKED stav */
+.modern-check input:checked + .custom-indicator {
+    background-color: #4caf50;
+    border-color: #4caf50;
+    color: white;
+}
+
+/* Symbol zaškrtnutí pro checkbox */
+.modern-check input[type="checkbox"]:checked + .custom-indicator::after {
+    content: "✓";
+    font-size: 15px;
+}
+
+/* Vyplněné kolečko pro radio */
+.modern-check input[type="radio"]:checked + .custom-indicator::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    background: white;
+    border-radius: 50%;
+}
+
+/* Text */
+.label-text {
+    color: #222;
+}

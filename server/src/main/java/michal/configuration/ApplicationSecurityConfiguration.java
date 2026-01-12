@@ -13,6 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 import java.util.List;
 
 /**
@@ -55,10 +56,14 @@ public class ApplicationSecurityConfiguration {
                 // Enable and configure CORS rules (frontend origin etc.)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .formLogin(formLogin -> formLogin.disable())
+
                 // Define which requests are allowed without login
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/register", "/api/login", "/api/me").permitAll() // public endpoints
-                        .requestMatchers("/api/list/**").permitAll() // public list endpoints
+                        .requestMatchers("/api/list/**").authenticated()
+                        .requestMatchers("/api/register", "/api/login", "/api/me").permitAll() // public endpoints/ public list endpoints
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated() // everything else requires login
                 )
                 // Configure logout endpoint and response
@@ -74,7 +79,6 @@ public class ApplicationSecurityConfiguration {
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json");
-                            response.getWriter().write("{\"error\": \"Nepřihlášený uživatel\"}");
                         })
                 )
 
@@ -92,9 +96,10 @@ public class ApplicationSecurityConfiguration {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allow requests from this origin (React dev server)
+        // Allow requests from this origin (React dev server and Netlify)
         configuration.setAllowedOrigins(List.of("http://localhost:5173",
-                "https://sholist.netlify.app"));
+                "https://sholist.netlify.app",
+                "https://*.netlify.app"));
 
         // Allow common HTTP methods
         configuration.setAllowedMethods(List.of("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS"));

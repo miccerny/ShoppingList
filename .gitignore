@@ -136,4 +136,6 @@ dist
 .pnp.*
 
 client/.history/*
+
 server/uploads/*
+

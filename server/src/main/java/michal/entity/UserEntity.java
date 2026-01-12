@@ -27,7 +27,7 @@ public class UserEntity implements UserDetails {
     private Long id;
 
     /** Email address of the user (used as username). */
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, name = "username")
     private String email;
 
     /** Encrypted password of the user. */

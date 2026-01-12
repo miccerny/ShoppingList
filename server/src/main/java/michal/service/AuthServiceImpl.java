@@ -58,6 +58,7 @@ public class AuthServiceImpl implements AuthService {
         // Convert authenticated user entity to DTO
         Object principal = auth.getPrincipal();
         if (principal instanceof UserEntity user) {
+            System.out.println("Succefully logged is user: " + user.getEmail());
             return userMapper.toDTO(user);
         }
 

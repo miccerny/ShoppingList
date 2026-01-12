@@ -3,7 +3,10 @@ package michal.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Entity representing a shopping list.
@@ -33,4 +36,20 @@ public class ListEntity {
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = true)
     private UserEntity owner;
+
+    /**
+     * Collection of users with whom this list is shared.
+     *
+     * <p>
+     * This represents a one-to-many relationship:
+     * one list can be shared with multiple users.
+     * </p>
+     *
+     * <p>
+     * The relationship is managed by {@link SharedListEntity},
+     * which contains the foreign key and ownership information.
+     * </p>
+     */
+    @OneToMany(mappedBy = "list", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<SharedListEntity> sharedWith = new HashSet<>();
 }

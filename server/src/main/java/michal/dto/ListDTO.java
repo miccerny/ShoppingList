@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * Data Transfer Object representing a shopping list.
  * <p>
@@ -27,5 +29,7 @@ public class ListDTO {
 
     /** Number of items contained in this list. */
     private long itemsCount;
+
+    private List<ItemsDTO> items;
 }
 
