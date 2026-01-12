@@ -41,7 +41,9 @@ const RegistrationPage = () => {
 
         try {
             await apiPost("/register", registrationData);
-            showFlash("success", "Registrace proběhla úspěšně. Nyní se můžete přihlásit.");
+            showFlash("success",
+                 "Registrace proběhla úspěšně. Nyní se můžete přihlásit."
+                );
             nav("/login");
         } catch (e) {
             if (e instanceof HttpRequestError) {
@@ -65,10 +67,14 @@ const RegistrationPage = () => {
                     }));
 
                 } else {
-                    showFlash("danger", "Registrace se nezdařila.");
+                    showFlash("danger",
+                         "Registrace se nezdařila."
+                        );
                 }
             } else {
-                showFlash("danger", "Neočekávaná chyba během registrace.");
+                showFlash("danger",
+                     "Neočekávaná chyba během registrace."
+                    );
             }
         }
     };
@@ -133,7 +139,11 @@ const RegistrationPage = () => {
                         required={true}
                     />
                 </div>
-                <input type="submit" className="btn btn-primary mt-2" value="Registrovat se"></input>
+                <input 
+                    type="submit" 
+                    className="btn btn-primary mt-2" 
+                    value="Registrovat se"
+                    ></input>
             </form>
         </div>
     );

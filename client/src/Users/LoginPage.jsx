@@ -35,13 +35,19 @@ const LoginPage = () => {
             })
             .catch(e => {
                 if(e instanceof HttpRequestError && e.statusCode === 401){
-                    showFlash("danger", "Přihlášení se nezdařilo: Špatný email nebo heslo");
+                    showFlash("danger",
+                         "Přihlášení se nezdařilo: Špatný email nebo heslo"
+                        );
                     return;
                 }
                 if(e instanceof HttpRequestError){
-                    showFlash("danger", `Přihlášení se nezdařilo: ${e.message}`);
+                    showFlash("danger",
+                         `Přihlášení se nezdařilo: ${e.message}`
+                        );
                 }
-                showFlash("danger", "Přihlášení se nezdařilo.");
+                showFlash("danger",
+                     "Přihlášení se nezdařilo."
+                    );
                 
             });
         };
@@ -68,7 +74,11 @@ const LoginPage = () => {
                     prompt="Vyplňte heslo"
                     name="password" />
             </div>
-                <input type="submit" className="btn btn-primary mt-2" value="Přihlásit se" />
+                <input 
+                    type="submit" 
+                    className="btn btn-primary mt-2" 
+                    value="Přihlásit se" 
+                    />
             </form>
         </div>
     );

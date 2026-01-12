@@ -1,3 +1,16 @@
+/**
+ * ItemIndex page component.
+ *
+ * Responsibilities:
+ * - Loads and displays items for a selected list.
+ * - Handles authenticated (online) and guest (offline) modes.
+ * - Coordinates item CRUD actions and state updates.
+ * - Manages modal visibility for item creation and editing.
+ *
+ * Note:
+ * This component acts as a feature orchestrator and delegates
+ * rendering to smaller presentational components.
+ */
 import { useEffect, useState } from "react";
 import ItemTable from "./ItemTable";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -7,19 +20,51 @@ import { useSession } from "../contexts/session";
 import { loadGuestList, updateGuestItems } from "../Lists/GuestList";
 import { useParams } from "react-router-dom";
 import { useFlash } from "../contexts/flash";
+
+/**
+ * Environment configuration.
+ *
+ * MODE:
+ * - "mock"    → relative URLs, MSW interception
+ * - "backend" → real backend URLs
+ */
 const MODE = import.meta.env.VITE_API_MODE;        // "mock" | "backend"
 const BACKEND = import.meta.env.VITE_BACKEND_URL;
 
+/**
+ * ItemIndex component.
+ *
+ * Displays all items belonging to a single list.
+ */
 const ItemIndex = (props) => {
     const { session } = useSession();
+
+    /**
+     * Local component state.
+     */
     const [itemState, setItemState] = useState([]);
     const [errorState, setError] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [editId, setEditId] = useState(null);
+
+    /**
+    * Route parameter.
+    *
+    * Note:
+    * `id` represents the list ID obtained from the URL.
+    */
     const { id } = useParams();
     const listId = id;
+
     const { showFlash } = useFlash();
 
+    /**
+     * Resolves image URL based on environment and backend configuration.
+     *
+     * My note:
+     * This function ensures images work correctly in both
+     * mock and backend modes without changing backend responses.
+     */
     const resolveImageUrl = (url) => {
         if (!url) return null;
         if (url.startsWith("http")) return url;
@@ -33,7 +78,13 @@ const ItemIndex = (props) => {
         return base + url;
     };
 
-
+    /**
+     * Normalizes item data returned from backend or guest storage.
+     *
+     * Responsibilities:
+     * - Resolves imageId from different DTO shapes
+     * - Builds final imageUrl used by the UI
+     */
     const normalizeItems = (items) =>
         (Array.isArray(items) ? items : []).map((it) => {
             const imageId = it?.imageId ?? it?.image?.id ?? null;
@@ -42,6 +93,12 @@ const ItemIndex = (props) => {
             return { ...it, imageId, imageUrl };
         });
 
+    /**
+     * Loads items depending on session state.
+     *
+    * - Authenticated → fetch from backend
+    *  - Guest → load from localStorage
+    */
     const loadItems = () => {
         if (session.status === "authenticated") {
 
@@ -57,28 +114,35 @@ const ItemIndex = (props) => {
         }
     };
 
-
-
-
+    /**
+     * Load items when list ID or session state changes.
+     */
     useEffect(() => {
         loadItems();
 
     }, [id, session]);
 
+     /**
+     * Handles toggling of item "purchased" state.
+     *
+     * Flow:
+     * 1. Update local state optimistically
+     * 2. Persist change (localStorage or backend)
+     */
     const handleCheck = async (itemId) => {
 
-        // 1️⃣ Najdu původní item (před změnou)
+        // Find original item state
         const oldItem = itemState.find(i => i.id === itemId);
         const newPurchasedValue = !oldItem.purchased;
 
-        // 2️⃣ Změním state
+        // Update UI state optimistically
         setItemState(prev =>
             prev.map(item =>
                 item.id === itemId ? { ...item, purchased: newPurchasedValue } : item
             )
         );
 
-        // 3️⃣ Guest režim → uložit do localStorage
+       // Guest mode → persist to localStorage
         setItemState(prev => {
             const updatedItems = prev.map(item =>
                 item.id === itemId ? { ...item, purchased: newPurchasedValue } : item
@@ -87,10 +151,10 @@ const ItemIndex = (props) => {
                 showFlash("success", "Změna uložena (guest režim).");
                 updateGuestItems(listId, updatedItems);
             }
-            return updatedItems; // guest končí tady
+            return updatedItems;
         });
 
-        // 4️⃣ Auth režim → uložit na BE
+        // Authenticated mode → persist to backend
         try {
             await apiPut(`/list/${listId}/items/${itemId}`, {
                 purchased: newPurchasedValue
@@ -103,6 +167,13 @@ const ItemIndex = (props) => {
         }
     };
 
+    /**
+     * Handles item deletion.
+     *
+     * Behavior:
+     * - Authenticated → delete via backend API
+     * - Guest → update local state and localStorage
+     */
     const handleDelete = async (itemId) => {
         try {
 
@@ -113,7 +184,7 @@ const ItemIndex = (props) => {
                 return;
             }
 
-            //GUEST režim
+            // Guest mode
             setItemState((prev) => {
                 const updatedItems = prev.filter(
                     (item) => String(item.id) !== String(id)
@@ -137,6 +208,7 @@ const ItemIndex = (props) => {
                 <h1 className="text-center mb-3">Položky</h1>
                 {errorState && <div className="alert alert-danger">{errorState}</div>}
 
+                {/* Create new item */}
                 <button className="btn btn-success mb-3"
                     onClick={() => {
                         setEditId(null);
@@ -148,7 +220,7 @@ const ItemIndex = (props) => {
 
 
                 <hr />
-
+                {/* Items table */}
                 <ItemTable
                     items={itemState}
                     label="Počet položek: "
@@ -159,7 +231,7 @@ const ItemIndex = (props) => {
                     onDelete={handleDelete}
                     purchased={handleCheck}
                 />
-
+                {/* Item create / edit modal */}
                 <ItemForm
                     show={showModal}
                     onClose={() => setShowModal(false)}
