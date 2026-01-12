@@ -81,8 +81,8 @@ The project is designed as a realistic showcase of a modern Java + React stack, 
 ## 🧩 Architecture Overview
 
 ```text
-backend/
 
+backend/
  ├─ controller/         → REST endpoints (User, List, Items, Images)
  ├─ service/            → Business logic & ownership checks
  ├─ mapper/             → DTO ↔ Entity mapping (MapStruct)
