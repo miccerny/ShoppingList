@@ -61,9 +61,8 @@ public class ApplicationSecurityConfiguration {
 
                 // Define which requests are allowed without login
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/register", "/api/login", "/api/me").permitAll() // public endpoints
-                        .requestMatchers("/api/list/**").permitAll()// public list endpoints
-                        .requestMatchers("/api/images/**").permitAll()
+                        .requestMatchers("/api/list/**").authenticated()
+                        .requestMatchers("/api/register", "/api/login", "/api/me").permitAll() // public endpoints/ public list endpoints
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated() // everything else requires login
                 )
@@ -97,7 +96,7 @@ public class ApplicationSecurityConfiguration {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allow requests from this origin (React dev server)
+        // Allow requests from this origin (React dev server and Netlify)
         configuration.setAllowedOrigins(List.of("http://localhost:5173",
                 "https://sholist.netlify.app",
                 "https://*.netlify.app"));

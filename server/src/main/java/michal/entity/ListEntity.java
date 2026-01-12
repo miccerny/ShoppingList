@@ -37,6 +37,19 @@ public class ListEntity {
     @JoinColumn(name = "owner_id", nullable = true)
     private UserEntity owner;
 
+    /**
+     * Collection of users with whom this list is shared.
+     *
+     * <p>
+     * This represents a one-to-many relationship:
+     * one list can be shared with multiple users.
+     * </p>
+     *
+     * <p>
+     * The relationship is managed by {@link SharedListEntity},
+     * which contains the foreign key and ownership information.
+     * </p>
+     */
     @OneToMany(mappedBy = "list", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<SharedListEntity> sharedWith = new HashSet<>();
 }
