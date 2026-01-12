@@ -3,9 +3,11 @@
 # 🧺 Shopping List App (Spring Boot + React)
 
 Full-stack web application for managing shopping lists and items with user authentication, ownership protection, and image support.
+
 The application supports both guest mode (local storage) and authenticated mode (server persistence).
 
 The project is designed as a realistic showcase of a modern Java + React stack, including security, DTO mapping, and REST API design.
+
 ---
 
 ## 🌍 Live Demo (Production)
