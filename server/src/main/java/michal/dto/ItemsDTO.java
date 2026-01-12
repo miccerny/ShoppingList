@@ -25,9 +25,13 @@ public class ItemsDTO {
     private float count;
 
     /** ID of the list this item belongs to. */
-    @JsonProperty("list_id")
+    @JsonProperty("listId")
     private Long listId;
 
     /** Indicates whether the item is checked (completed). */
     private boolean purchased;
+
+    private Long imageId;
+
+    private String imageUrl;
 }

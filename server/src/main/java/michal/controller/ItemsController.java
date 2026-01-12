@@ -1,12 +1,15 @@
 package michal.controller;
 
+
 import michal.dto.ItemsDTO;
+import michal.entity.UserEntity;
 import michal.service.ItemsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * This controller handles all HTTP requests related to items inside a shopping list.
@@ -24,16 +27,24 @@ public class ItemsController {
     private ItemsService itemsService;
 
     /**
-     * Get all items that belong to a specific list.
-     * Example request: GET /api/list/1/items
+     * Retrieves all items belonging to a specific list.
      *
-     * @param listId the ID of the list
-     * @return a list of all items for the given list
+     * <p>
+     * This endpoint returns all items that are part of the given list.
+     * Access is restricted to the authenticated user who owns the list
+     * or has permission to view it.
+     * </p>
+     *
+     * @param listId ID of the list whose items should be retrieved
+     * @param user currently authenticated user
+     * @return list of {@link ItemsDTO} objects
      */
     @GetMapping("/items")
-    public List<ItemsDTO> getAllItems(@PathVariable Long listId) {
-        // Calls the service to get all items from a list
-        return itemsService.getAllItems(listId);
+    public List<ItemsDTO> getAllItems(@PathVariable Long listId,
+                                      @AuthenticationPrincipal UserEntity user) {
+        // Delegates item retrieval to the service layer.
+        // The service validates user access and loads items from the database.
+        return itemsService.getAllItems(listId, user);
     }
 
     /**
@@ -51,35 +62,107 @@ public class ItemsController {
         return itemsService.addItems(listId, itemsDTO);
     }
 
-
-
+    /**
+     * Retrieves a single item from a specific list.
+     *
+     * <p>
+     * This endpoint returns detailed information about an item that belongs
+     * to the given list. Access is restricted to the authenticated user.
+     * </p>
+     *
+     * @param id ID of the requested item
+     * @param listId ID of the list that owns the item
+     * @param user currently authenticated user
+     * @return {@link ItemsDTO} representing the requested item
+     */
     @GetMapping("/items/{id}")
     public ItemsDTO getItemFromList(
-            @PathVariable Long id
+            @PathVariable Long id,
+            @PathVariable Long listId,
+            @AuthenticationPrincipal UserEntity user
     ) {
-        return itemsService.getItem(id);
+        // Delegates item retrieval to the service layer.
+        // The service validates ownership and maps the entity to DTO.
+        return itemsService.getItem(id, listId, user);
     }
+
     /**
-     * Update an existing item.
-     * Example request: PUT /api/list/1/items/5
-     * The item with ID 5 will be updated with new data.
+     * Updates (or replaces) an image assigned to an existing item.
      *
-     * @param itemsDTO the updated item data from the frontend
-     * @return the updated item as DTO
+     * <p>
+     * This endpoint accepts a multipart/form-data request containing an image file.
+     * The image is validated, stored, and then linked to the given item.
+     * </p>
+     *
+     * @param listId ID of the list that owns the item (used for routing and validation)
+     * @param id ID of the item whose image should be updated
+     * @param file uploaded image file (multipart/form-data)
+     * @param user currently authenticated user
+     * @return updated {@link ItemsDTO} including image metadata
+     * @throws Exception if the image upload or update fails
      */
-    @PutMapping("/items/{id}")
-    public ItemsDTO update(@PathVariable Long id, @RequestBody ItemsDTO itemsDTO) {
-        return itemsService.updateItems(id, itemsDTO);
+    @PutMapping(
+            value = "/items/{id}/image",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ItemsDTO updateItemImage(
+            @PathVariable Long listId,
+            @PathVariable Long id,
+            @RequestPart("file") MultipartFile file,
+            @AuthenticationPrincipal UserEntity user
+    ) throws Exception {
+        // Delegates the image update logic to the service layer.
+        // The service is responsible for validation, authorization,
+        // file storage and entity update.
+        return itemsService.updateItemImage(id, file, user);
+    }
+
+    /**
+     * Updates an existing item with new data.
+     *
+     * <p>
+     * This endpoint updates basic item properties such as name, count or status.
+     * It does not handle image upload – image updates are managed by a separate endpoint.
+     * </p>
+     *
+     * @param listId ID of the list that owns the item (used for routing and authorization)
+     * @param id ID of the item to be updated
+     * @param dto data transfer object containing updated item values
+     * @param user currently authenticated user
+     * @return updated {@link ItemsDTO}
+     */
+    @PutMapping(
+            value = "/items/{id}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ItemsDTO updateItem(
+            @PathVariable Long listId,
+            @PathVariable Long id,
+            @RequestBody ItemsDTO dto,
+            @AuthenticationPrincipal UserEntity user
+    ) {
+        // Delegates update logic to the service layer.
+        // The service validates ownership and applies the changes.
+        return itemsService.updateItem(id, dto, user);
     }
     /**
-     * Delete an item by its ID.
-     * Example request: DELETE /api/list/1/items/5
+     * Deletes an existing item by its identifier.
      *
-     * @param id the ID of the item to delete
+     * <p>
+     * This endpoint removes an item from the system.
+     * The operation is restricted to the authenticated user
+     * who owns the item or has permission to modify the list.
+     * </p>
+     *
+     * @param id ID of the item to be deleted
+     * @param user currently authenticated user
      */
     @DeleteMapping("/items/{id}")
-    public void remove(@PathVariable long id) {
-        // Calls the service to remove the item by ID
-        itemsService.removeItem(id);
+    public void remove(@PathVariable long id, UserEntity user) {
+        // Delegates delete logic to the service layer.
+        // The service validates ownership and performs the removal.
+        itemsService.removeItem(id, user);
     }
 }

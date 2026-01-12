@@ -37,5 +37,7 @@ public class ItemsEntity {
     @Column
     private boolean purchased;
 
+    @OneToOne(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private ItemsImageEntity image;
 
 }

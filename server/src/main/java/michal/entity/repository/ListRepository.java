@@ -8,9 +8,12 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * Repository interface for managing {@link ListEntity} data.
+ * Repository interface for {@link ListEntity}.
+ *
  * <p>
- * Extends {@link JpaRepository} to provide basic CRUD operations.
+ * This repository provides database access methods for shopping lists.
+ * It extends {@link JpaRepository}, which already contains basic CRUD operations.
+ * </p>
  */
 @EnableJpaRepositories
 @Repository
@@ -19,7 +22,7 @@ public interface ListRepository extends JpaRepository<ListEntity, Long> {
     /**
      * Finds all lists owned by a specific user.
      *
-     * @param ownerId ID of the list owner
+     * @param userId of the list owner
      * @return list of {@link ListEntity} objects belonging to that user
      */
     @Query("""
@@ -31,5 +34,5 @@ public interface ListRepository extends JpaRepository<ListEntity, Long> {
     """)
     List<ListEntity> findAllUserAccessibleLists(Long userId);
 
-    List<ListEntity> findByOwner_Id(Long ownerId);
+    boolean existsByIdAndOwnerId(Long listId, Long ownerId);
 }

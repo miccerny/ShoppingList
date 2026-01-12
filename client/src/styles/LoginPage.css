@@ -1,0 +1,19 @@
+.login-page, .registration-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* ⬅️ horizontální střed */
+  padding: 2rem 1rem;
+}
+
+.login-form, .registration-form {
+  width: 100%;
+  max-width: 420px; /* ⬅️ kontrola šířky */
+  text-align: center;
+}
+
+.input-label {
+  display: block;
+  text-align: left;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}

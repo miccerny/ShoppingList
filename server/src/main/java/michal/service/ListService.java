@@ -56,5 +56,26 @@ public interface ListService {
      */
     ListDTO getListWithItems(Long id);
 
+    /**
+     * Shares a shopping list with another user identified by email.
+     *
+     * <p>
+     * This method allows the list owner to grant access to the list
+     * to another registered user.
+     * </p>
+     *
+     * <p>
+     * The implementation is expected to:
+     * <ul>
+     *   <li>verify that the list exists</li>
+     *   <li>verify that the current user is the list owner</li>
+     *   <li>find the target user by email</li>
+     *   <li>create a shared list relationship</li>
+     * </ul>
+     * </p>
+     *
+     * @param listId ID of the list to be shared
+     * @param email email address of the user to share the list with
+     */
     void shareList(Long listId, String email);
 }

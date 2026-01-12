@@ -1,0 +1,31 @@
+/* Navbar layout: 3 sloupce (levá rezerva | střed | pravá část) */
+.nav-layout{
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+/* Střed – vždy přesně na střed navbaru */
+.nav-center{
+  justify-self: center;
+  margin: 0;
+}
+
+/* Pravá část – vpravo */
+.nav-right{
+  justify-self: end;
+  margin: 0;
+  display: flex;
+}
+
+/* Na menších šířkách to dej hezky pod sebe a doprostřed */
+@media (max-width: 576px){
+  .nav-layout{
+    grid-template-columns: 1fr;
+    row-gap: 6px;
+  }
+
+  .nav-left{ display: none; }
+  .nav-center{ justify-self: center; }
+  .nav-right{ justify-self: center; }
+}
