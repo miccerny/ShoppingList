@@ -43,7 +43,7 @@ export function App() {
    * - flash: currently displayed message (if any)
    * - clear: function to remove the message
    */
-  const { flash, clear } = useFlash();
+  const { flash} = useFlash();
 
   /**
    * Authentication session state.
