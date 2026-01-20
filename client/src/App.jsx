@@ -27,6 +27,18 @@ import './styles/navbar.css'
 import { useFlash } from './contexts/flash';
 import FlashMessage from './components/FlashMessage';
 
+function IndexRedirect() {
+  const { session } = useSession();
+
+  // Dokud zjišťujeme session (/me), nikam uživatele nepřesměrovávej
+  if (session.status === "loading") {
+    return null; // případně sem můžeš dát malý spinner
+  }
+
+  // Až když session není loading, pošli uživatele na /list
+  return <Navigate to="/list" replace />;
+}
+
 /**
  * Main application component.
  *
@@ -165,7 +177,7 @@ export function App() {
               {/* Application routes */}
               <Routes>
                  {/* Default route → redirect to list overview */}
-                <Route index element={<Navigate to={"/list"} />} />
+                <Route index element={<IndexRedirect />} />
                 {/* List-related routes */}
                 <Route path="/list">
                   <Route index element={<ListIndex />} />
