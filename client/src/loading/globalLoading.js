@@ -10,7 +10,8 @@
  * This module is NOT a React component.
  * It is a simple global JS state that React can subscribe to.
  */
-let isLoading = false; // current visibility state of the overlay
+
+let state = { visible: false, mode: "soft" }; // "soft" | "hard"
 let timerId = null; // current visibility state of the overlay
 const listeners = new Set(); // subscribed UI listeners (React)
 
@@ -18,7 +19,7 @@ const listeners = new Set(); // subscribed UI listeners (React)
  * Notifies all subscribed listeners about state change.
  */
 function notify() {
-  listeners.forEach((fn) => fn(isLoading));
+  listeners.forEach((fn) => fn(state));
 }
 
 export const globalLoading = {
@@ -31,12 +32,14 @@ export const globalLoading = {
    * - Overlay appears only if loading takes longer than e.g. 200 ms.
    *
    * @param {number} delayMs - delay in milliseconds (default: 200 ms)
+   * @param {"soft"|"hard"} mode Loading mode
    */
-  showDelayed(delayMs = 200) {
+  showDelayed(delayMs = 200, mode = "soft") {
     // If a timer already exists, do nothing
-    if (timerId) return;
+    if (timerId, state.visible) return;
+
     timerId = setTimeout(() => {
-      isLoading = true;
+      state = {visible: true, mode};
       timerId = null;
       notify();
     }, delayMs);
@@ -56,8 +59,8 @@ export const globalLoading = {
       timerId = null;
     }
     // Hide overlay only if it is visible
-    if (isLoading) {
-      isLoading = false;
+    if (state.visible) {
+      state = {visible: false, mode: "soft"};
       notify();
     }
   },
@@ -81,6 +84,6 @@ export const globalLoading = {
    * Used by React to get the current value.
    */
   getSnapshot() {
-    return isLoading;
+    return state;
   },
 };

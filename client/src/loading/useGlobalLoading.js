@@ -12,6 +12,9 @@
 import { useSyncExternalStore } from "react";
 import { globalLoading } from "./globalLoading";
 
+/**
+ * React hook that subscribes UI to globalLoading state.
+ */
 export function useGlobalLoading() {
   return useSyncExternalStore(globalLoading.subscribe, globalLoading.getSnapshot);
 }

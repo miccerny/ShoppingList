@@ -62,7 +62,7 @@ console.info("🔧 API_URL:", API_URL);
  */
 export async function apiGet(endpoint, options = {}) {
   console.log("➡️ FETCH:", `${API_URL}${endpoint}`);
-  globalLoading.showDelayed(200);
+  globalLoading.showDelayed(200, "soft");
   try {
     const response = await fetch(`${API_URL}${endpoint}`, {
       method: "GET",
@@ -101,7 +101,7 @@ export async function apiGet(endpoint, options = {}) {
  * This is a convenience wrapper around apiGet().
  */
 export async function apiGetById(endpoint, id) {
-  globalLoading.showDelayed(200);
+  globalLoading.showDelayed(200, "hard");
   try {
     return apiGet(`${endpoint}/${id}`);
   } finally {
@@ -121,7 +121,7 @@ export async function apiGetById(endpoint, id) {
 export async function apiPost(endpoint, data) {
   console.log("➡️ FETCH POST:", `${API_URL}${endpoint}`);
 
-  globalLoading.showDelayed(200);
+  globalLoading.showDelayed(200, "hard");
   try {
     const response = await fetch(`${API_URL}${endpoint}`, {
       method: "POST",
@@ -165,7 +165,7 @@ export async function apiPut(endpoint, data) {
     `${API_URL}${endpoint}`,
     isFormData ? "(FormData)" : data,
   );
-  globalLoading.showDelayed(200);
+  globalLoading.showDelayed(200), "hard";
   try {
     const response = await fetch(`${API_URL}${endpoint}`, {
       method: "PUT",
@@ -200,7 +200,7 @@ export async function apiPut(endpoint, data) {
  * DELETE requests usually do not return a response body.
  */
 export async function apiDelete(endpoint) {
-  globalLoading.showDelayed(200);
+  globalLoading.showDelayed(200, "hard");
   try {
     const response = await fetch(`${API_URL}${endpoint}`, {
       method: "DELETE",

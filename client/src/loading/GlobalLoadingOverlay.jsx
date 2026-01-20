@@ -14,21 +14,27 @@ import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useGlobalLoading } from "./useGlobalLoading";
 
+/**
+ * Fullscreen loading overlay.
+ *
+ * Modes:
+ * - soft: visible but allows user interaction (guest mode still works)
+ * - hard: blocks user interaction (e.g. login/register/save to backend)
+ */
 export default function GlobalLoadingOverlay() {
-  const isLoading = useGlobalLoading();
+  const { visible, mode } = useGlobalLoading();
+  const isBlocking = mode === "hard";
 
-  /**
-   * Locks body scrolling while loading overlay is visible.
-   */
+  // Only lock scrolling when blocking is enabled
   useEffect(() => {
-    if (!isLoading) return;
+    if (!visible || !isBlocking) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => (document.body.style.overflow = prev);
-  }, [isLoading]);
+  }, [visible, isBlocking]);
 
   // Do not render anything if loading is inactive
-  if (!isLoading) return null;
+  if (!visible) return null;
 
   /**
    * Portal is used so the overlay is rendered
@@ -44,6 +50,11 @@ export default function GlobalLoadingOverlay() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+
+        // IMPORTANT:
+        // soft => clicks go through
+        // hard => blocks UI
+        pointerEvents: isBlocking ? "auto" : "none",
       }}
     >
       <div
@@ -54,12 +65,17 @@ export default function GlobalLoadingOverlay() {
           boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
           minWidth: 220,
           textAlign: "center",
+
+          // In soft mode, the box is also non-interactive (so clicks pass through)
+          pointerEvents: isBlocking ? "auto" : "none",
         }}
       >
         <div style={{ fontWeight: 700, marginBottom: 6 }}>Načítám…</div>
-        <div style={{ fontSize: 13, opacity: 0.7 }}>Chvilku strpení.</div>
+        <div style={{ fontSize: 13, opacity: 0.7 }}>
+          {isBlocking ? "Chvilku strpení." : "Data se načítají na pozadí." }
+          </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

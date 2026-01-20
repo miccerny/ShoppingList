@@ -28,7 +28,7 @@ const STORAGE_KEY = "guest";
  * data structures stored in localStorage.
  */
 export function loadGuestList() {
-  globalLoading.showDelayed(200);
+  globalLoading.showDelayed(200, "soft");
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     console.log("Načtené guest listy:", raw);
@@ -67,7 +67,7 @@ export function loadGuestList() {
  * is accidentally passed in.
  */
 export function saveGuestLists(lists) {
-  globalLoading.showDelayed(200);
+  globalLoading.showDelayed(200, "soft");
   try {
     const flat = Array.isArray(lists[0]) ? lists[0] : lists;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(flat));
