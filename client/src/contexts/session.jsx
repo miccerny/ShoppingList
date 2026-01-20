@@ -27,10 +27,11 @@ import { syncGuestListAfterLogin } from "../Lists/GuestList";
  * Default values are mainly useful for development and tooling.
  */
 const SessionContext = createContext({
-    session: { 
-        data: null, status: "loading" },
-         setSession: (data) => {
-    }
+  session: {
+    data: null,
+    status: "loading",
+  },
+  setSession: (data) => {},
 });
 
 /**
@@ -42,7 +43,7 @@ const SessionContext = createContext({
  * This hook assumes it is used inside SessionProvider.
  */
 export function useSession() {
-    return useContext(SessionContext);
+  return useContext(SessionContext);
 }
 
 /**
@@ -55,75 +56,80 @@ export function useSession() {
  * @param {React.ReactNode} props.children Child components
  */
 export const SessionProvider = ({ children }) => {
+  /**
+   * Session state.
+   *
+   * - data   → user information returned from backend
+   * - status → current authentication status
+   */
+  const [sessionState, setSessionState] = useState({
+    data: null,
+    status: "loading",
+  });
 
-    /**
-     * Session state.
-     *
-     * - data   → user information returned from backend
-     * - status → current authentication status
-     */
-    const [sessionState, setSessionState] = useState({ 
-        data: null, 
-        status: "loading" 
-    });
+  /**
+   * Effect triggered after successful authentication.
+   *
+   * Note:
+   * Synchronizes guest-created lists with the authenticated user
+   * once the session becomes authenticated.
+   */
+  useEffect(() => {
+    if (sessionState.status === "authenticated" && sessionState.data) {
+      syncGuestListAfterLogin();
+    }
+  }, [sessionState.status, sessionState.data]);
 
-    /**
-     * Effect triggered after successful authentication.
-     *
-     * Note:
-     * Synchronizes guest-created lists with the authenticated user
-     * once the session becomes authenticated.
-     */
-    useEffect(() => {
-        if (sessionState.status === "authenticated" && sessionState.data) {
-            syncGuestListAfterLogin();
+  /**
+   * Effect executed once on application startup.
+   *
+   * Behavior:
+   * - Requests current user info from backend (/me endpoint)
+   * - Updates session state based on response
+   */
+  useEffect(() => {
+    let cancelled = false;
+    setSessionState({ data: null, status: "loading" });
+    console.log("SESSION USE apiGet:", apiGet);
+
+    apiGet("/me")
+      .then((data) => {
+        if (cancelled) return;
+
+        setSessionState({ data, status: "authenticated" });
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        /**
+         * Unauthorized response handling.
+         *
+         * My note:
+         * 401 indicates that the user is not logged in,
+         * which is a valid and expected state.
+         */
+        if (e instanceof HttpRequestError && e.response?.status === 401) {
+          // bezpečně zkontroluj status
+          setSessionState({ data: null, status: "unauthenticated" });
+          return;
         }
-    }, [sessionState.status]);
 
-    /**
-     * Effect executed once on application startup.
-     *
-     * Behavior:
-     * - Requests current user info from backend (/me endpoint)
-     * - Updates session state based on response
-     */
-    useEffect(() => {
-        console.log("SESSION USE apiGet:", apiGet);
-        apiGet("/me")
-            .then(data => setSessionState({ data, status: "authenticated" }))
-            .catch(e => {
+        // Any other error is treated as a session load failure
+        console.error("Session load failed:", e);
+        setSessionState({ data: null, status: "unauthenticated" });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-                 /**
-                 * Unauthorized response handling.
-                 *
-                 * My note:
-                 * 401 indicates that the user is not logged in,
-                 * which is a valid and expected state.
-                 */
-                if (e instanceof HttpRequestError &&
-                     e.response?.status === 401
-                    ) {
-                    // bezpečně zkontroluj status
-                    setSessionState({ data: null,
-                         status: "unauthenticated" 
-                        });
-                    return;
-                }
-
-                // Any other error is treated as a session load failure
-                console.error("Session load failed:", e);
-                setSessionState({ data: null,
-                     status: "unauthenticated" 
-                    });
-            });
-    }, []);
-
-    return (
-        <SessionContext.Provider value={{ 
-            session: sessionState,
-             setSession: setSessionState 
-             }}>
-            {children}
-        </SessionContext.Provider>
-    );
+  return (
+    <SessionContext.Provider
+      value={{
+        session: sessionState,
+        setSession: setSessionState,
+      }}
+    >
+      {children}
+    </SessionContext.Provider>
+  );
 };
