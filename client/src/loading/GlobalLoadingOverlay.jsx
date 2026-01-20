@@ -22,7 +22,7 @@ import { useGlobalLoading } from "./useGlobalLoading";
  * - hard: blocks user interaction (e.g. login/register/save to backend)
  */
 export default function GlobalLoadingOverlay() {
-  console.log("OVERLAY:", { visible, mode });
+  
   const { visible, mode } = useGlobalLoading();
   const isBlocking = mode === "hard";
 
@@ -42,6 +42,8 @@ export default function GlobalLoadingOverlay() {
    * Portal is used so the overlay is rendered
    * above the entire application, regardless of component hierarchy.
    */
+
+  console.log("OVERLAY:", { visible, mode });
   return createPortal(
     <div
       aria-busy="true"
