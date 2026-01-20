@@ -7,7 +7,7 @@
  * - Creates the React root and renders the application.
  * - Registers global context providers.
  *
- * Beginner note:
+ * Note:
  * This file is the first one executed in the browser.
  * No React component is rendered before this code runs.
  */
@@ -17,11 +17,13 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import ReactDOM from 'react-dom/client';
 import { SessionProvider } from './contexts/session.jsx';
 import { FlashProvider } from './contexts/flash.jsx';
+import GlobalLoadingOverlay from "./loading/GlobalLoadingOverlay.jsx";
+import React from 'react';
 
 /**
  * Logs environment variables to help verify runtime configuration.
  *
- * Beginner note:
+ * Note:
  * - DEV tells whether the app runs in development mode.
  * - MODE controls whether MSW mocks or real backend is used.
  * - BACKEND defines the backend API base URL.
@@ -42,7 +44,7 @@ console.log("ENV CHECK:", {
  * - DEV + backend mode → real backend is used
  * - DEV + mock mode → MSW intercepts HTTP requests
  *
- * Beginner note:
+ * Note:
  * MSW runs directly in the browser and fakes API responses,
  * which allows frontend development without a running backend.
  */
@@ -79,14 +81,14 @@ async function enableMocking() {
   /**
    * Fallback for unexpected configuration values.
    *
-   * Beginner note:
+   * Note:
    * This helps catch misconfiguration early
    * (e.g. typo in VITE_API_MODE).
    */
   if (!["mock", "backend"].includes(MODE)) {
   console.warn("Unknown VITE_API_MODE:", MODE);
 
-  if (!BACKEND && !(DEV && MODE === "mock")) {
+  if (!(DEV && MODE === "mock")) {
   console.warn("⚠️ BACKEND URL is missing");
 }
 }
@@ -100,15 +102,18 @@ async function enableMocking() {
  * 2. Create React root
  * 3. Render the app wrapped in global providers
  *
- * Beginner note:
+ * Note:
  * Providers placed here are available to the entire application.
  */
 enableMocking().then(() => {
   ReactDOM.createRoot(document.getElementById('root')).render(
+    <React.StrictMode>
+      <GlobalLoadingOverlay />
     <SessionProvider>
       <FlashProvider>
       <App />
       </FlashProvider>
     </SessionProvider>
+    </React.StrictMode>
   );
 });

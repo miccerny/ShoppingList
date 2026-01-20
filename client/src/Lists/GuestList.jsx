@@ -11,6 +11,7 @@
  * and later seamlessly migrate guest data to a user account.
  */
 import { apiPost } from "../utils/api";
+import { globalLoading } from "../loading/globalLoading";
 
 /**
  * localStorage key used to store guest lists.
@@ -27,6 +28,7 @@ const STORAGE_KEY = "guest";
  * data structures stored in localStorage.
  */
 export function loadGuestList() {
+  globalLoading.showDelayed(200);
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     console.log("Načtené guest listy:", raw);
@@ -34,7 +36,7 @@ export function loadGuestList() {
 
     const parsed = JSON.parse(raw);
 
-     /**
+    /**
      * Safety check for accidental nested arrays ([[...]]).
      *
      * My note:
@@ -50,6 +52,8 @@ export function loadGuestList() {
   } catch (e) {
     console.error(" Chyba při čtení localStorage:", e);
     return [];
+  } finally {
+    globalLoading.hide();
   }
 }
 
@@ -63,11 +67,14 @@ export function loadGuestList() {
  * is accidentally passed in.
  */
 export function saveGuestLists(lists) {
+  globalLoading.showDelayed(200);
   try {
     const flat = Array.isArray(lists[0]) ? lists[0] : lists;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(flat));
   } catch (e) {
     console.error("Chyba při ukládání localStorage:", e);
+  } finally {
+    globalLoading.hide();
   }
 }
 
@@ -80,7 +87,6 @@ export function saveGuestLists(lists) {
 export function clearGuestList() {
   localStorage.removeItem(STORAGE_KEY);
 }
-
 
 /**
  * Synchronizes guest lists with backend after user login.
@@ -117,14 +123,13 @@ export async function syncGuestListAfterLogin() {
  * but internally always stores a flat list structure.
  */
 export function saveGuestList(list) {
-
   if (Array.isArray(list)) {
     console.error("saveGuestList dostal pole, čekám jeden objekt:", list);
     return saveGuestLists(list);
   }
   const all = loadGuestList();
   const idx = all.findIndex(
-    (l) => String(l.id ?? l._id) === String(list.id ?? list._id)
+    (l) => String(l.id ?? l._id) === String(list.id ?? list._id),
   );
 
   if (idx !== -1) {
@@ -146,27 +151,25 @@ export function saveGuestList(list) {
  * This function acts as the single source of truth
  * for updating guest list items.
  */
-export function updateGuestItems(listId, updateItems){
-    const all = loadGuestList();
+export function updateGuestItems(listId, updateItems) {
+  const all = loadGuestList();
 
-    const idx = all.findIndex(
-      (l) => String(l.id ?? l._id ) === String(listId)
-    );
+  const idx = all.findIndex((l) => String(l.id ?? l._id) === String(listId));
 
-    if(idx !== -1){
-      all[idx] = {
-        ...all[idx],
-        items: updateItems,
-      }
-      console.warn("Guest list nebyl nalezen", listId);
-    }else{
-      all.push({
-        id: listId,
-        items: updateItems,
-      })
-    }
-      saveGuestLists(all); 
-};
+  if (idx !== -1) {
+    all[idx] = {
+      ...all[idx],
+      items: updateItems,
+    };
+    console.warn("Guest list nebyl nalezen", listId);
+  } else {
+    all.push({
+      id: listId,
+      items: updateItems,
+    });
+  }
+  saveGuestLists(all);
+}
 
 /**
  * Deletes a specific guest list.
@@ -175,7 +178,7 @@ export function updateGuestItems(listId, updateItems){
  */
 export function deleteGuestList(id) {
   const filtered = loadGuestList().filter(
-    (l) => String(l.id ?? l._id) !== String(id)
+    (l) => String(l.id ?? l._id) !== String(id),
   );
   saveGuestLists(filtered);
 }

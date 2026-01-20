@@ -7,7 +7,7 @@
  * - Integrates session handling (authentication state).
  * - Displays global flash messages.
  *
- * Beginner note:
+ * Note:
  * This component acts as the main composition layer of the frontend.
  * Individual pages are rendered based on the current URL.
  */
@@ -32,7 +32,7 @@ import FlashMessage from './components/FlashMessage';
  *
  * @returns {JSX.Element} Rendered application layout with routing.
  *
- * Beginner note:
+ * Note:
  * This component is rendered once and stays mounted.
  * Only the content inside <Routes> changes when navigating.
  */
@@ -60,7 +60,7 @@ export function App() {
    * - Sends logout request to backend
    * - Resets session state on frontend regardless of API result
    *
-   * Beginner note:
+   * Note:
    * .finally() ensures local logout even if the backend request fails.
    */
   const handleLogoutClick = () => {
@@ -74,7 +74,7 @@ export function App() {
      /**
      * BrowserRouter enables client-side routing.
      *
-     * Beginner note:
+     * Note:
      * Navigation happens without full page reloads.
      */
     <BrowserRouter>
