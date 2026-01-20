@@ -28,6 +28,7 @@ export default function GlobalLoadingOverlay() {
   // Only lock scrolling when blocking is enabled
   useEffect(() => {
     if (!visible || !isBlocking) return;
+
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => (document.body.style.overflow = prev);
@@ -42,6 +43,8 @@ export default function GlobalLoadingOverlay() {
    */
   return createPortal(
     <div
+      aria-busy="true"
+      aria-live="polite"
       style={{
         position: "fixed",
         inset: 0,
@@ -72,8 +75,8 @@ export default function GlobalLoadingOverlay() {
       >
         <div style={{ fontWeight: 700, marginBottom: 6 }}>Načítám…</div>
         <div style={{ fontSize: 13, opacity: 0.7 }}>
-          {isBlocking ? "Chvilku strpení." : "Data se načítají na pozadí." }
-          </div>
+          {isBlocking ? "Chvilku strpení." : "Data se načítají na pozadí."}
+        </div>
       </div>
     </div>,
     document.body,
