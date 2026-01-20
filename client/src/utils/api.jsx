@@ -62,6 +62,7 @@ console.info("🔧 API_URL:", API_URL);
  */
 export async function apiGet(endpoint, options = {}) {
   console.log("➡️ FETCH:", `${API_URL}${endpoint}`);
+  console.log("LOADING MODE: GET -> soft");
   globalLoading.showDelayed(200, "soft");
   try {
     const response = await fetch(`${API_URL}${endpoint}`, {
@@ -160,7 +161,7 @@ export async function apiPut(endpoint, data) {
     `${API_URL}${endpoint}`,
     isFormData ? "(FormData)" : data,
   );
-  globalLoading.showDelayed(200), "hard";
+  globalLoading.showDelayed(200, "hard");
   try {
     const response = await fetch(`${API_URL}${endpoint}`, {
       method: "PUT",
