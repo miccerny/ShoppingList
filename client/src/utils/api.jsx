@@ -101,12 +101,7 @@ export async function apiGet(endpoint, options = {}) {
  * This is a convenience wrapper around apiGet().
  */
 export async function apiGetById(endpoint, id) {
-  globalLoading.showDelayed(200, "hard");
-  try {
     return apiGet(`${endpoint}/${id}`);
-  } finally {
-    globalLoading.hide();
-  }
 }
 
 /**
