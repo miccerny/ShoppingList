@@ -28,7 +28,6 @@ const STORAGE_KEY = "guest";
  * data structures stored in localStorage.
  */
 export function loadGuestList() {
-  globalLoading.showDelayed(200, "soft");
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     console.log("Načtené guest listy:", raw);
@@ -52,8 +51,6 @@ export function loadGuestList() {
   } catch (e) {
     console.error(" Chyba při čtení localStorage:", e);
     return [];
-  } finally {
-    globalLoading.hide();
   }
 }
 
@@ -67,15 +64,22 @@ export function loadGuestList() {
  * is accidentally passed in.
  */
 export function saveGuestLists(lists) {
-  globalLoading.showDelayed(200, "soft");
-  try {
-    const flat = Array.isArray(lists[0]) ? lists[0] : lists;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(flat));
-  } catch (e) {
-    console.error("Chyba při ukládání localStorage:", e);
-  } finally {
-    globalLoading.hide();
-  }
+  return globalLoading.wrap(
+    async () => {
+      try {
+        const flat = Array.isArray(lists[0]) ? lists[0] : lists;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(flat));
+      } catch (e) {
+        console.error("Chyba při ukládání localStorage:", e);
+      }
+    },
+    {
+      source: "local",
+      mode: "soft",
+      delayMs: 200,
+      message: "Ukládám lokální data…",
+    },
+  );
 }
 
 /**

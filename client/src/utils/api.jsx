@@ -63,32 +63,38 @@ console.info("🔧 API_URL:", API_URL);
 export async function apiGet(endpoint, options = {}) {
   console.log("➡️ FETCH:", `${API_URL}${endpoint}`);
   console.log("LOADING MODE: GET -> soft");
-  globalLoading.showDelayed(200, "soft");
-  try {
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...(options.headers || {}),
-      },
-      credentials: "include",
-      ...options,
-    });
 
-    if (!response.ok) {
-      throw new HttpRequestError(
-        `Chyba ${response.status}: ${response.statusText}`,
-        response,
-      );
-    }
-    // No content → return null explicitly
-    if (response.status === 204) return null;
+  return globalLoading.wrap(
+    async () => {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...(options.headers || {}),
+        },
+        credentials: "include",
+        ...options,
+      });
 
-    const text = await response.text();
-    return text ? JSON.parse(text) : null;
-  } finally {
-    globalLoading.hide();
-  }
+      if (!response.ok) {
+        throw new HttpRequestError(
+          `Chyba ${response.status}: ${response.statusText}`,
+          response,
+        );
+      }
+      // No content → return null explicitly
+      if (response.status === 204) return null;
+
+      const text = await response.text();
+      return text ? JSON.parse(text) : null;
+    },
+    {
+      source: "be",
+      mode: "soft",
+      delayMs: 200,
+      message: "Načítám data...",
+    },
+  );
 }
 
 /**
@@ -102,7 +108,7 @@ export async function apiGet(endpoint, options = {}) {
  * This is a convenience wrapper around apiGet().
  */
 export async function apiGetById(endpoint, id) {
-    return apiGet(`${endpoint}/${id}`);
+  return apiGet(`${endpoint}/${id}`);
 }
 
 /**
@@ -117,28 +123,33 @@ export async function apiGetById(endpoint, id) {
 export async function apiPost(endpoint, data) {
   console.log("➡️ FETCH POST:", `${API_URL}${endpoint}`);
 
-  globalLoading.showDelayed(200, "hard");
-  try {
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      throw new HttpRequestError(
-        `Chyba ${response.status}: ${response.statusText}`,
-        response,
-      );
-    }
+  return globalLoading.wrap(
+    async () => {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new HttpRequestError(
+          `Chyba ${response.status}: ${response.statusText}`,
+          response,
+        );
+      }
 
-    if (response.status === 204) return null;
+      if (response.status === 204) return null;
 
-    const text = await response.text();
-    return text ? JSON.parse(text) : null;
-  } finally {
-    globalLoading.hide();
-  }
+      const text = await response.text();
+      return text ? JSON.parse(text) : null;
+    },
+    {
+      source: "be",
+      mode: "hard",
+      delayMs: 200,
+      message: "Ukládám data…",
+    },
+  );
 }
 
 /**
@@ -161,28 +172,36 @@ export async function apiPut(endpoint, data) {
     `${API_URL}${endpoint}`,
     isFormData ? "(FormData)" : data,
   );
-  globalLoading.showDelayed(200, "hard");
-  try {
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      method: "PUT",
-      headers: isFormData ? undefined : { "Content-Type": "application/json" },
-      credentials: "include",
-      body: isFormData ? data : JSON.stringify(data),
-    });
-    if (!response.ok) {
-      throw new HttpRequestError(
-        `Chyba při úpravě ${endpoint}: ${response.status}: ${response.statusText}`,
-        response,
-      );
-    }
 
-    if (response.status === 204) return null;
+  return globalLoading.wrap(
+    async () => {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: "PUT",
+        headers: isFormData
+          ? undefined
+          : { "Content-Type": "application/json" },
+        credentials: "include",
+        body: isFormData ? data : JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new HttpRequestError(
+          `Chyba při úpravě ${endpoint}: ${response.status}: ${response.statusText}`,
+          response,
+        );
+      }
 
-    const text = await response.text();
-    return text ? JSON.parse(text) : null;
-  } finally {
-    globalLoading.hide();
-  }
+      if (response.status === 204) return null;
+
+      const text = await response.text();
+      return text ? JSON.parse(text) : null;
+    },
+    {
+      source: "be",
+      mode: "hard", // POST už typicky blokuje
+      delayMs: 200,
+      message: "Ukládám data…",
+    },
+  );
 }
 
 /**
@@ -196,19 +215,24 @@ export async function apiPut(endpoint, data) {
  * DELETE requests usually do not return a response body.
  */
 export async function apiDelete(endpoint) {
-  globalLoading.showDelayed(200, "hard");
-  try {
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
-    if (!response.ok) {
-      throw new HttpRequestError(
-        `Chyba při mazání ${endpoint}: ${response.status}: ${response.statusText}`,
-        response,
-      );
-    }
-  } finally {
-    globalLoading.hide();
-  }
+  return globalLoading.wrap(
+    async () => {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new HttpRequestError(
+          `Chyba při mazání ${endpoint}: ${response.status}: ${response.statusText}`,
+          response,
+        );
+      }
+    },
+    {
+      source: "be",
+      mode: "hard", // POST už typicky blokuje
+      delayMs: 200,
+      message: "Ukládám data…",
+    },
+  );
 }

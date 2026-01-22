@@ -11,9 +11,24 @@
  * It is a simple global JS state that React can subscribe to.
  */
 
-let state = { visible: false, mode: "soft" }; // "soft" | "hard"
+let state = { 
+  visible: false, 
+  mode: "soft", // "soft" | "hard"
+  source: null,
+  message: "",
+};
+ 
 let timerId = null; // current visibility state of the overlay
+let token = 0;
 const listeners = new Set(); // subscribed UI listeners (React)
+
+const inFlight = {
+  be: 0,
+  local: 0,
+  hard: 0,
+};
+
+let suppressBeHardOverlay = false;
 
 /**
  * Notifies all subscribed listeners about state change.
@@ -22,46 +37,116 @@ function notify() {
   listeners.forEach((fn) => fn(state));
 }
 
+function clearTimer(){
+  if(timerId){
+    clearTimer(timerId);
+    timerId = null;
+  }
+}
+
+function hasAnyRunning(){
+  return inFlight.be > 0 || inFlight.local > 0;
+}
+
+function computeTargetState(fallbackMessage = ""){
+  const source = inFlight.be > 0 ? "be" : inFlight.local > 0 ? "local" : null;
+
+  let mode = inFlight.hard > 0 ? "hard" : "soft";
+
+  if (suppressBeHardOverlay && source === "be") mode = "soft";
+
+  const message =
+    fallbackMessage ||
+    (source === "be" ? "Komunikuju se serverem…" : source === "local" ? "Zpracovávám…" : "");
+
+  return { source, mode, message };
+}
+
+function scheduleShow(delayMs = 200, message = "") {
+ 
+  if (!hasAnyRunning()) return;
+
+  
+  if (state.visible) {
+    const next = computeTargetState(message);
+    state = { ...state, ...next, visible: true };
+    notify();
+    return;
+  }
+
+  
+  if (timerId) return;
+
+  const myToken = ++token;
+  timerId = setTimeout(() => {
+    timerId = null;
+    if (myToken !== token) return;
+    if (!hasAnyRunning()) return;
+
+    const next = computeTargetState(message);
+    state = { visible: true, ...next };
+    notify();
+  }, delayMs);
+}
+
+function hideIfDone() {
+  
+  if (!hasAnyRunning()) {
+    clearTimer();
+    token++;
+    if (state.visible) {
+      state = { visible: false, mode: "soft", source: null, message: "" };
+      notify();
+    }
+  } else {
+   
+    const next = computeTargetState(state.message);
+    if (state.visible) {
+      state = { ...state, ...next };
+      notify();
+    }
+  }
+}
+
 export const globalLoading = {
   
-  /**
-   * Shows the loading overlay AFTER a delay.
-   *
-   * Why delay?
-   * - Prevents flickering for very fast operations.
-   * - Overlay appears only if loading takes longer than e.g. 200 ms.
-   *
-   * @param {number} delayMs - delay in milliseconds (default: 200 ms)
-   * @param {"soft"|"hard"} mode Loading mode
-   */
-  showDelayed(delayMs = 200, mode = "soft") {
-    // If a timer already exists, do nothing
-    if (timerId, state.visible) return;
-
-    timerId = setTimeout(() => {
-      state = {visible: true, mode};
-      timerId = null;
+  setSuppressBeHardOverlay(value) {
+    suppressBeHardOverlay = !!value;
+    // když už overlay běží, přepočítej stav
+    if (state.visible) {
+      state = { ...state, ...computeTargetState(state.message), visible: true };
       notify();
-    }, delayMs);
+    }
   },
 
-  /**
-   * Hides the loading overlay.
-   *
-   * Behavior:
-   * - Cancels pending delay timer (if loading was fast)
-   * - Hides overlay if it is currently visible
-   */
-  hide() {
-    // Cancel delayed showing if request finished quickly
-    if (timerId) {
-      clearTimeout(timerId);
-      timerId = null;
+  begin({ source, mode = "soft", delayMs = 200, message = "" } = {}) {
+    if (source !== "be" && source !== "local") {
+      console.warn("globalLoading.begin: source must be 'be' or 'local'");
     }
-    // Hide overlay only if it is visible
-    if (state.visible) {
-      state = {visible: false, mode: "soft"};
-      notify();
+
+    inFlight[source] = (inFlight[source] || 0) + 1;
+    if (mode === "hard") inFlight.hard += 1;
+
+    scheduleShow(delayMs, message);
+
+    let ended = false;
+    return () => {
+      if (ended) return;
+      ended = true;
+
+      inFlight[source] = Math.max(0, (inFlight[source] || 0) - 1);
+      if (mode === "hard") inFlight.hard = Math.max(0, inFlight.hard - 1);
+
+      hideIfDone();
+    };
+  },
+
+  async wrap(promiseFactory, opts) {
+    const end = this.begin(opts);
+    try {
+      return await promiseFactory();
+    } finally {
+      end();
     }
   },
 
