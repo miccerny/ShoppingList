@@ -64,6 +64,28 @@ export async function apiGet(endpoint, options = {}) {
   console.log("➡️ FETCH:", `${API_URL}${endpoint}`);
   console.log("LOADING MODE: GET -> soft");
 
+  if (endpoint === "/me") {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      },
+      credentials: "include",
+      ...options,
+    });
+
+    if (!response.ok) {
+      throw new HttpRequestError(
+        `Chyba ${response.status}: ${response.statusText}`,
+        response
+      );
+    }
+    if (response.status === 204) return null;
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
+  }
+
   return globalLoading.wrap(
     async () => {
       const response = await fetch(`${API_URL}${endpoint}`, {

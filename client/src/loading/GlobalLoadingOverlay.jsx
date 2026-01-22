@@ -22,7 +22,7 @@ import { useGlobalLoading } from "./useGlobalLoading";
  * - hard: blocks user interaction (e.g. login/register/save to backend)
  */
 export default function GlobalLoadingOverlay() {
-  const { visible, mode } = useGlobalLoading();
+  const { visible, mode, message } = useGlobalLoading();
   const isBlocking = mode === "hard";
 
   // Only lock scrolling when blocking is enabled
@@ -36,6 +36,31 @@ export default function GlobalLoadingOverlay() {
 
   // Do not render anything if loading is inactive
   if (!visible) return null;
+
+  if (!isBlocking) {
+    return createPortal(
+      <div
+        style={{
+          position: "fixed",
+          left: "50%",
+          bottom: 18,
+          transform: "translateX(-50%)",
+          zIndex: 9999,
+          background: "#fff",
+          padding: "10px 14px",
+          borderRadius: 999,
+          boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+          fontSize: 13,
+          opacity: 0.95,
+          pointerEvents: "none",
+        }}
+        aria-live="polite"
+      >
+        {message || "Načítám na pozadí…"}
+      </div>,
+      document.body
+    );
+  }
 
   /**
    * Portal is used so the overlay is rendered
@@ -60,7 +85,7 @@ export default function GlobalLoadingOverlay() {
         // IMPORTANT:
         // soft => clicks go through
         // hard => blocks UI
-        pointerEvents: isBlocking ? "auto" : "none",
+        pointerEvents: "auto",
       }}
     >
       <div
@@ -71,15 +96,10 @@ export default function GlobalLoadingOverlay() {
           boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
           minWidth: 220,
           textAlign: "center",
-
-          // In soft mode, the box is also non-interactive (so clicks pass through)
-          pointerEvents: isBlocking ? "auto" : "none",
         }}
       >
         <div style={{ fontWeight: 700, marginBottom: 6 }}>Načítám…</div>
-        <div style={{ fontSize: 13, opacity: 0.7 }}>
-          {isBlocking ? "Chvilku strpení." : "Data se načítají na pozadí."}
-        </div>
+        <div style={{ fontSize: 13, opacity: 0.7 }}>"Chvilku strpení."</div>
       </div>
     </div>,
     document.body,
