@@ -11,13 +11,13 @@
  * It is a simple global JS state that React can subscribe to.
  */
 
-let state = { 
-  visible: false, 
+let state = {
+  visible: false,
   mode: "soft", // "soft" | "hard"
   source: null,
   message: "",
 };
- 
+
 let timerId = null; // current visibility state of the overlay
 let token = 0;
 const listeners = new Set(); // subscribed UI listeners (React)
@@ -37,18 +37,18 @@ function notify() {
   listeners.forEach((fn) => fn(state));
 }
 
-function clearTimer(){
-  if(timerId){
-    clearTimer(timerId);
+function clearTimer() {
+  if (timerId) {
+    clearTimeout(timerId);
     timerId = null;
   }
 }
 
-function hasAnyRunning(){
+function hasAnyRunning() {
   return inFlight.be > 0 || inFlight.local > 0;
 }
 
-function computeTargetState(fallbackMessage = ""){
+function computeTargetState(fallbackMessage = "") {
   const source = inFlight.be > 0 ? "be" : inFlight.local > 0 ? "local" : null;
 
   let mode = inFlight.hard > 0 ? "hard" : "soft";
@@ -57,16 +57,18 @@ function computeTargetState(fallbackMessage = ""){
 
   const message =
     fallbackMessage ||
-    (source === "be" ? "Komunikuju se serverem…" : source === "local" ? "Zpracovávám…" : "");
+    (source === "be"
+      ? "Komunikuju se serverem…"
+      : source === "local"
+        ? "Zpracovávám…"
+        : "");
 
   return { source, mode, message };
 }
 
 function scheduleShow(delayMs = 200, message = "") {
- 
   if (!hasAnyRunning()) return;
 
-  
   if (state.visible) {
     const next = computeTargetState(message);
     state = { ...state, ...next, visible: true };
@@ -74,7 +76,6 @@ function scheduleShow(delayMs = 200, message = "") {
     return;
   }
 
-  
   if (timerId) return;
 
   const myToken = ++token;
@@ -90,7 +91,6 @@ function scheduleShow(delayMs = 200, message = "") {
 }
 
 function hideIfDone() {
-  
   if (!hasAnyRunning()) {
     clearTimer();
     token++;
@@ -99,7 +99,6 @@ function hideIfDone() {
       notify();
     }
   } else {
-   
     const next = computeTargetState(state.message);
     if (state.visible) {
       state = { ...state, ...next };
@@ -109,13 +108,21 @@ function hideIfDone() {
 }
 
 export const globalLoading = {
-  
   setSuppressBeHardOverlay(value) {
     suppressBeHardOverlay = !!value;
-    // když už overlay běží, přepočítej stav
-    if (state.visible) {
-      state = { ...state, ...computeTargetState(state.message), visible: true };
-      notify();
+
+  
+    if (hasAnyRunning()) {
+      if (state.visible) {
+        state = {
+          ...state,
+          ...computeTargetState(state.message),
+          visible: true,
+        };
+        notify();
+      } else {
+        scheduleShow(200, state.message);
+      }
     }
   },
 
@@ -150,7 +157,7 @@ export const globalLoading = {
     }
   },
 
-   /**
+  /**
    * Subscribes a listener to loading state changes.
    *
    * Used by React via useSyncExternalStore.
