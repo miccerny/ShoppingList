@@ -28,14 +28,6 @@ import { useFlash } from './contexts/flash';
 import FlashMessage from './components/FlashMessage';
 
 function IndexRedirect() {
-  const { session } = useSession();
-
-  // Dokud zjišťujeme session (/me), nikam uživatele nepřesměrovávej
-  if (session.status === "loading") {
-    return null; // případně sem můžeš dát malý spinner
-  }
-
-  // Až když session není loading, pošli uživatele na /list
   return <Navigate to="/list" replace />;
 }
 
