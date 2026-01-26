@@ -25,7 +25,12 @@ export default function GlobalLoadingOverlay() {
   const { visible, mode, message } = useGlobalLoading();
   const isBlocking = mode === "hard";
 
-  // Only lock scrolling when blocking is enabled
+  /**
+   * Only lock scrolling when blocking is enabled.
+   *
+   * This prevents the user from interacting with the page
+   * while a "hard" loading overlay is active.
+   */
   useEffect(() => {
     if (!visible || !isBlocking) return;
 
@@ -34,10 +39,19 @@ export default function GlobalLoadingOverlay() {
     return () => (document.body.style.overflow = prev);
   }, [visible, isBlocking]);
 
-  // Do not render anything if loading is inactive
+  /**
+   * Do not render anything if loading is inactive.
+   *
+   * Returning null keeps DOM clean and avoids unnecessary portals.
+   */
   if (!visible) return null;
 
   if (!isBlocking) {
+    /**
+     * Soft mode: lightweight non-blocking toast-style overlay.
+     *
+     * Shows progress without blocking clicks or scrolling.
+     */
     return createPortal(
       <div
         style={{
@@ -62,11 +76,12 @@ export default function GlobalLoadingOverlay() {
     );
   }
 
-  /**
-   * Portal is used so the overlay is rendered
-   * above the entire application, regardless of component hierarchy.
+ /**
+   * Hard mode: full-screen blocking overlay.
+   *
+   * Portal is used so the overlay is rendered above the entire
+   * application, regardless of component hierarchy.
    */
-
   console.log("OVERLAY:", { visible, mode });
   return createPortal(
     <div

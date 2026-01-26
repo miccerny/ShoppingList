@@ -11,6 +11,15 @@
  * It is a simple global JS state that React can subscribe to.
  */
 
+/**
+ * Internal global loading state snapshot.
+ *
+ * Properties:
+ * - visible → whether overlay is currently shown
+ * - mode    → "soft" (non-blocking) or "hard" (blocking)
+ * - source  → "be" (backend) | "local" | null
+ * - message → display text for the overlay
+ */
 let state = {
   visible: false,
   mode: "soft", // "soft" | "hard"
@@ -18,16 +27,33 @@ let state = {
   message: "",
 };
 
-let timerId = null; // current visibility state of the overlay
+/**
+ * Timer used to delay showing the overlay
+ * to avoid flashing on quick operations.
+ */
+let timerId = null;
 let token = 0;
 const listeners = new Set(); // subscribed UI listeners (React)
 
+/**
+ * In-flight counters for concurrent operations.
+ *
+ * - be    → backend requests
+ * - local → local operations
+ * - hard  → blocking operations
+ */
 const inFlight = {
   be: 0,
   local: 0,
   hard: 0,
 };
 
+/**
+ * When true, backend "hard" operations are downgraded to "soft".
+ *
+ * Useful when the UI should remain interactive
+ * even while backend calls are running.
+ */
 let suppressBeHardOverlay = false;
 
 /**
@@ -37,6 +63,9 @@ function notify() {
   listeners.forEach((fn) => fn(state));
 }
 
+/**
+ * Clears any pending visibility timer.
+ */
 function clearTimer() {
   if (timerId) {
     clearTimeout(timerId);
@@ -44,10 +73,21 @@ function clearTimer() {
   }
 }
 
+/**
+ * Checks if any operation is currently running.
+ *
+ * @returns {boolean}
+ */
 function hasAnyRunning() {
   return inFlight.be > 0 || inFlight.local > 0;
 }
 
+/**
+ * Computes the overlay state based on current counters.
+ *
+ * @param {string} fallbackMessage
+ * @returns {{source: string|null, mode: string, message: string}}
+ */
 function computeTargetState(fallbackMessage = "") {
   const source = inFlight.be > 0 ? "be" : inFlight.local > 0 ? "local" : null;
 
@@ -66,6 +106,12 @@ function computeTargetState(fallbackMessage = "") {
   return { source, mode, message };
 }
 
+/**
+ * Schedules showing the overlay after a delay.
+ *
+ * @param {number} delayMs
+ * @param {string} message
+ */
 function scheduleShow(delayMs = 200, message = "") {
   if (!hasAnyRunning()) return;
 
@@ -90,6 +136,10 @@ function scheduleShow(delayMs = 200, message = "") {
   }, delayMs);
 }
 
+/**
+ * Hides the overlay if nothing is running,
+ * or refreshes state if work is still ongoing.
+ */
 function hideIfDone() {
   if (!hasAnyRunning()) {
     clearTimer();
@@ -108,10 +158,14 @@ function hideIfDone() {
 }
 
 export const globalLoading = {
+  /**
+   * Toggle suppression of backend "hard" overlay mode.
+   *
+   * @param {boolean} value
+   */
   setSuppressBeHardOverlay(value) {
     suppressBeHardOverlay = !!value;
 
-  
     if (hasAnyRunning()) {
       if (state.visible) {
         state = {
@@ -126,6 +180,16 @@ export const globalLoading = {
     }
   },
 
+  /**
+   * Starts tracking a loading operation.
+   *
+   * @param {Object} opts
+   * @param {"be"|"local"} opts.source
+   * @param {"soft"|"hard"} [opts.mode="soft"]
+   * @param {number} [opts.delayMs=200]
+   * @param {string} [opts.message=""]
+   * @returns {Function} end function to stop tracking
+   */
   begin({ source, mode = "soft", delayMs = 200, message = "" } = {}) {
     if (source !== "be" && source !== "local") {
       console.warn("globalLoading.begin: source must be 'be' or 'local'");
@@ -148,6 +212,14 @@ export const globalLoading = {
     };
   },
 
+  /**
+   * Convenience wrapper for promises to auto-start/stop.
+   *
+   * @template T
+   * @param {() => Promise<T>} promiseFactory
+   * @param {Object} opts
+   * @returns {Promise<T>}
+   */
   async wrap(promiseFactory, opts) {
     const end = this.begin(opts);
     try {
