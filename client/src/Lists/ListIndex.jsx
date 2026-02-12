@@ -137,6 +137,10 @@ const ListIndex = (props) => {
 
         <div className="d-flex justify-content-center align-items-start min-vh-100">
             <div className="w-100 mt-5">
+              <p>Aplikace pro <strong>vytváření, úpravu a smazání </strong> Nákupního seznamu (případně Todo listu), včetně vložení jednotlivých položek do seznamu. </p>
+                <strong>Anonymní uživatel:</strong> <span> uložení dat do paměti prohlížeče (localStorage) a jejich správa</span>
+              <p><strong>Přihlášený uživatel: </strong> uložení do databáze (server) a možnost operací s obrázky u položek</p>
+
                 <h1 className="text-center mb-3">Seznamy</h1>
                 {/* Navigation-based flash message */}
                 {flash && (<div className="alert alert-success text-center">
