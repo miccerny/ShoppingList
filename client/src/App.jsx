@@ -113,6 +113,7 @@ export function App() {
                       <span className='visually-hidden'>Loading...</span>
                     </div>
                     <span>Připojuji se k serveru (první načtení může trvat déle)…</span>
+                    <p>Po připojení se lze přihlásit / registrovat</p>
                   </li>
                 ) : session.data ? (
                    /**
