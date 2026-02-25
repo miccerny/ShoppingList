@@ -118,7 +118,8 @@ GET /api/imagesP{imageId} Load item image
 DELETE /api/images/{imageId} Delete item image
 
 
-💾 ## Database Schema
+ ## 💾 Database Schema
+ ```
 users
  ├─ id (PK)
  ├─ email (unique)
@@ -142,13 +143,13 @@ images
  ├─ original_name
  ├─ content_type
  ├─ item_id (FK → items.id)
-
-🧠 ## How to Run
-# Backend
+```
+## 🧠 How to Run
+### Backend
 - mvn clean install
 - mvn spring-boot:run
 
-# Frontend
+### Frontend
 - npm install
 - npm run dev
 
