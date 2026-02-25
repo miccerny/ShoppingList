@@ -102,20 +102,23 @@ frontend/
 
 ## 📡 API Endpoints
 Method	Endpoint	Description
-POST	/api/register	Register a new user
-POST	/api/login	Log in user
-POST /api/logout Log out user
-GET	/api/me	Get current logged-in user
-GET	/api/list	Get all lists for logged user
-POST	/api/list	Create new list
-PUT	/api/list/{id}	Update list
-DELETE	/api/list/{id}	Delete list
-GET	/api/list/{listId}/items	Get all items for a list
-POST	/api/list/{listId}/items	Add item to a list
-PUT	/api/list/{listId}/items/{id}	Update existing item and image
-DELETE	/api/list/{listId}/items/{id}	Remove item
-GET /api/imagesP{imageId} Load item image
-DELETE /api/images/{imageId} Delete item image
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST   | /api/register | Register a new user |
+| POST   | /api/login | Log in user |
+| POST   | /api/logout | Log out user |
+| GET    | /api/me | Get current logged-in user |
+| GET    | /api/list | Get all lists for logged user |
+| POST   | /api/list | Create new list |
+| PUT    | /api/list/{id} | Update list |
+| DELETE | /api/list/{id} | Delete list |
+| GET    | /api/list/{listId}/items | Get all items for a list |
+| POST   | /api/list/{listId}/items | Add item to a list |
+| PUT    | /api/list/{listId}/items/{id} | Update existing item and image |
+| DELETE | /api/list/{listId}/items/{id} | Remove item |
+| GET    | /api/images/{imageId} | Load item image |
+| DELETE | /api/images/{imageId} | Delete item image |
 
 
  ## 💾 Database Schema
